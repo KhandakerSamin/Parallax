@@ -1,0 +1,24 @@
+@'
+
+# secrets
+.env
+
+# python
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# node
+node_modules/
+.next/
+
+# data and models (large or permission-restricted)
+data/raw/*
+data/processed/*
+data/embeddings/*
+!data/**/.gitkeep
+*.faiss
+*.pkl
+*.pdf
+'@ | Add-Content -Path .gitignore -Encoding utf8
