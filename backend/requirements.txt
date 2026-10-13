@@ -1,0 +1,12 @@
+# Backend requirements — FastAPI + PostgreSQL + Redis
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+sqlalchemy==2.0.*
+alembic==1.14.*
+psycopg2-binary==2.9.*
+redis==5.2.*
+python-dotenv==1.1.*
+pydantic==2.10.*
+pydantic-settings==2.7.*
+python-multipart==0.0.*
+httpx==0.28.*
