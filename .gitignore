@@ -1,24 +1,65 @@
-@'
-
-# secrets
+# ========================
+# Secrets & Environment
+# ========================
 .env
+.env.local
+.env.*.local
 
-# python
+# ========================
+# Python
+# ========================
 venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
-# node
+# ========================
+# Node / Frontend
+# ========================
 node_modules/
 .next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# data and models (large or permission-restricted)
+# ========================
+# Data & Models (large or restricted)
+# ========================
 data/raw/*
 data/processed/*
 data/embeddings/*
 !data/**/.gitkeep
 *.faiss
 *.pkl
+*.h5
+*.bin
+*.onnx
 *.pdf
-'@ | Add-Content -Path .gitignore -Encoding utf8
+
+# ========================
+# Docker
+# ========================
+*.log
+
+# ========================
+# IDE & OS
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
