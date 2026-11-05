@@ -14,6 +14,7 @@ import { ALLOWED_EMAIL_DOMAINS } from "@/lib/auth/config";
 import { AuthError } from "@/lib/auth/types";
 import { signUpSchema, type SignUpValues } from "@/lib/auth/validation";
 import { fieldA11y, FormField } from "./FormField";
+import { GoogleButton, OrDivider } from "./GoogleButton";
 import { PasswordInput } from "./PasswordInput";
 import { DepartmentSelect, RoleField } from "./ProfileFields";
 import { PasswordStrength } from "./PasswordStrength";
@@ -71,6 +72,9 @@ export function SignUpForm() {
 
   return (
     <motion.form animate={shake} onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <GoogleButton />
+      <OrDivider />
+
       <FormField id="name" label="Full name" error={err("name")}>
         <Input
           {...register("name")}

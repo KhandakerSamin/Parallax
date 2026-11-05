@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, useAnimationControls } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { AuthError } from "@/lib/auth/types";
 import { signInSchema, type SignInValues } from "@/lib/auth/validation";
 import { fieldA11y, FormField } from "./FormField";
-import { GoogleButton, OrDivider } from "./GoogleButton";
+import { GoogleButton, googleErrorMessage, OrDivider } from "./GoogleButton";
 import { PasswordInput } from "./PasswordInput";
 
 /** Only allow same-site relative redirects after sign-in. */
@@ -28,6 +28,8 @@ export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shake = useAnimationControls();
+  const next = safeNext(searchParams.get("next"));
+  const googleError = googleErrorMessage(searchParams.get("error"));
 
   const {
     register,
@@ -43,7 +45,7 @@ export function SignInForm() {
     try {
       const user = await signIn(values);
       toast.success(`Welcome back, ${user.name.split(" ")[0]}`);
-      router.replace(safeNext(searchParams.get("next")));
+      router.replace(next);
       router.refresh();
     } catch (error) {
       void shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.45 } });
@@ -59,7 +61,16 @@ export function SignInForm() {
       className="space-y-5"
       aria-describedby="signin-demo"
     >
-      <GoogleButton />
+      {googleError && (
+        <div
+          role="alert"
+          className="border-danger/30 bg-danger/5 text-foreground flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-sm"
+        >
+          <AlertCircle className="text-danger mt-0.5 size-4 shrink-0" aria-hidden />
+          {googleError}
+        </div>
+      )}
+      <GoogleButton next={next} />
       <OrDivider />
 
       <FormField
