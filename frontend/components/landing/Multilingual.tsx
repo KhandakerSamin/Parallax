@@ -11,7 +11,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const LAYOUT = {
   en: { left: "4%", top: "8%", from: { x: -40, y: -50 } },
   bn: { left: "34%", top: "33%", from: { x: 70, y: -30 } },
-  banglish: { left: "6%", top: "58%", from: { x: -50, y: 60 } },
+  banglish: { left: "6%", top: "52%", from: { x: -50, y: 60 } },
 } as const;
 
 export function Multilingual() {
@@ -38,7 +38,7 @@ export function Multilingual() {
 
         <Reveal delay={0.1}>
           <figure className="rounded-3xl border border-border bg-card p-4 shadow-lift sm:p-6">
-            <div className="bg-grid relative h-[23rem] overflow-hidden rounded-2xl bg-muted/50 sm:h-[25rem]">
+            <div className="bg-grid relative h-[27rem] overflow-hidden rounded-2xl bg-muted/50 sm:h-[25rem]">
               {/* Neighbourhood where the three phrasings land */}
               <motion.div
                 aria-hidden

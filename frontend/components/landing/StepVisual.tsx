@@ -81,7 +81,7 @@ export function StepVisual({ index }: { index: number }) {
     case 4:
       return (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <Badge>Top 20 chunks</Badge> → <Badge>Candidates</Badge> → <Badge variant="brand">Top 5</Badge>
           </div>
           {PERSPECTIVES.map((p, i) => (

@@ -168,6 +168,11 @@
     border-radius: 6px;
   }
 
+  /* Grid children may shrink below their content width (prevents mobile overflow). */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+
   /* Anchor targets clear the sticky navbar. */
   section[id] {
     scroll-margin-top: 5.5rem;
@@ -259,6 +264,23 @@
   animation-play-state: paused;
 }
 
+/* Hero entrance runs in CSS so text paints immediately, before hydration (better LCP). */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
 @keyframes shimmer {
   to {
     transform: translateX(100%);
@@ -316,6 +338,10 @@
 
   .marker {
     transition: none;
+  }
+
+  .hero-rise {
+    animation: none;
   }
 
   *,

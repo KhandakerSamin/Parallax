@@ -12,7 +12,7 @@ const { report } = HERO;
 /** The hero's signature visual: a layered mock report that tilts with the pointer. */
 export function HeroReport() {
   return (
-    <TiltStage className="relative mx-auto aspect-[5/5.4] w-full max-w-[30rem] sm:aspect-[5/4.6]">
+    <TiltStage className="relative mx-auto h-[33rem] w-full max-w-[30rem] sm:h-[34rem]">
       {/* Back plane: corpus search, farthest from the viewer */}
       <TiltPlane depth={8} className="absolute top-0 right-0 w-[78%]">
         <div className="rounded-2xl border border-border bg-card/70 p-4 opacity-80 shadow-soft backdrop-blur-sm">
@@ -28,7 +28,7 @@ export function HeroReport() {
       </TiltPlane>
 
       {/* Middle plane: perspective chips */}
-      <TiltPlane depth={18} className="absolute top-[14%] left-0 w-[64%]">
+      <TiltPlane depth={18} className="absolute top-14 left-0 w-[70%]">
         <div className="rounded-2xl border border-border bg-card/85 p-3.5 shadow-soft backdrop-blur-sm">
           <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
             Four perspectives

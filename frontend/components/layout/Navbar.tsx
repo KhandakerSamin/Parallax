@@ -41,7 +41,7 @@ export function Navbar({ userSlot }: NavbarProps) {
       >
         <Logo />
 
-        <nav aria-label="Primary" className="hidden md:block">
+        <nav aria-label="Primary" className="hidden lg:block">
           <ul className="flex items-center gap-1">
             {NAV_LINKS.map((link) => {
               const isActive = active === link.id;
