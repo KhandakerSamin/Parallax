@@ -11,6 +11,8 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Multilingual } from "@/components/landing/Multilingual";
 import { Perspectives } from "@/components/landing/Perspectives";
 import { Problem } from "@/components/landing/Problem";
+import { Research } from "@/components/landing/Research";
+import { Responsible } from "@/components/landing/Responsible";
 import { Roles } from "@/components/landing/Roles";
 
 export default function Home() {
@@ -29,6 +31,8 @@ export default function Home() {
         <Explainability />
         <Multilingual />
         <Roles />
+        <Research />
+        <Responsible />
         <ArchitectureSection />
       </main>
       <Footer />
