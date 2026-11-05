@@ -129,7 +129,7 @@ export function SignInForm() {
       </Button>
 
       <p id="signin-demo" className="bg-muted text-muted-foreground rounded-xl px-4 py-3 text-xs">
-        Demo account (mock mode):{" "}
+        Demo account:{" "}
         <span className="text-foreground font-mono">student@diu.edu.bd</span> /{" "}
         <span className="text-foreground font-mono">Parallax#2026</span>
       </p>
