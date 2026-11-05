@@ -26,7 +26,7 @@ function GoogleMark() {
 /** "Continue with Google" — UI only for now; the OAuth handler is a stub. */
 export function GoogleButton() {
   function handleClick() {
-    // TODO: redirect to `${API_URL}/auth/google` once the Express OAuth route exists.
+    // TODO: redirect to `${API_URL}/auth/google` once the backend OAuth route exists.
     toast.info("Google sign-in isn't connected yet", {
       description: "Use your university email and password for now.",
     });
