@@ -63,3 +63,6 @@ data/embeddings/*
 .DS_Store
 Thumbs.db
 desktop.ini
+# Local SQLite database (backend dev default)
+*.db
+*.db-journal
