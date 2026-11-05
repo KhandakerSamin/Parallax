@@ -18,7 +18,14 @@ export function ScoreRing({ value, size = 112, label = "Overall" }: ScoreRingPro
             <stop offset="100%" stopColor="#14b8a6" />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--muted)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--muted)"
+          strokeWidth={stroke}
+        />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -35,7 +42,7 @@ export function ScoreRing({ value, size = 112, label = "Overall" }: ScoreRingPro
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <CountUp value={value} decimals={2} className="text-2xl font-semibold tracking-tight" />
-        <span className="text-[11px] text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground text-[11px]">{label}</span>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ export function AuroraBackground({ className }: { className?: string }) {
           style={{ animationDelay: "-14s" }}
         />
       </motion.div>
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+      <div className="to-background absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent" />
     </div>
   );
 }

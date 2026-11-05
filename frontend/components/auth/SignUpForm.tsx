@@ -19,8 +19,18 @@ import { PasswordInput } from "./PasswordInput";
 import { PasswordStrength } from "./PasswordStrength";
 
 const ROLE_OPTIONS = [
-  { value: "student", label: "Student", icon: GraduationCap, desc: "Check work, explore prior projects" },
-  { value: "reviewer", label: "Reviewer", icon: BookOpenCheck, desc: "Inspect matches, record decisions" },
+  {
+    value: "student",
+    label: "Student",
+    icon: GraduationCap,
+    desc: "Check work, explore prior projects",
+  },
+  {
+    value: "reviewer",
+    label: "Reviewer",
+    icon: BookOpenCheck,
+    desc: "Inspect matches, record decisions",
+  },
 ] as const;
 
 const selectClass =
@@ -67,7 +77,11 @@ export function SignUpForm() {
         const field = error.message.toLowerCase().includes("email") ? "email" : "universityId";
         setError(field, { message: error.message }, { shouldFocus: true });
       }
-      toast.error(error instanceof AuthError ? error.message : "Couldn't create your account. Please try again.");
+      toast.error(
+        error instanceof AuthError
+          ? error.message
+          : "Couldn't create your account. Please try again.",
+      );
     }
   }
 
@@ -76,7 +90,12 @@ export function SignUpForm() {
   return (
     <motion.form animate={shake} onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
       <FormField id="name" label="Full name" error={err("name")}>
-        <Input {...register("name")} {...fieldA11y("name", err("name"))} autoComplete="name" disabled={isSubmitting} />
+        <Input
+          {...register("name")}
+          {...fieldA11y("name", err("name"))}
+          autoComplete="name"
+          disabled={isSubmitting}
+        />
       </FormField>
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -95,7 +114,12 @@ export function SignUpForm() {
             disabled={isSubmitting}
           />
         </FormField>
-        <FormField id="universityId" label="Student / Staff ID" error={err("universityId")} hint="Unique per person">
+        <FormField
+          id="universityId"
+          label="Student / Staff ID"
+          error={err("universityId")}
+          hint="Unique per person"
+        >
           <Input
             {...register("universityId")}
             {...fieldA11y("universityId", err("universityId"), true)}
@@ -119,7 +143,7 @@ export function SignUpForm() {
                   <label
                     key={opt.value}
                     className={cn(
-                      "relative flex cursor-pointer flex-col gap-1 rounded-xl border p-3.5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                      "has-[:focus-visible]:ring-ring relative flex cursor-pointer flex-col gap-1 rounded-xl border p-3.5 transition-colors has-[:focus-visible]:ring-2",
                       checked ? "border-primary bg-semantic-soft" : "border-input hover:bg-muted",
                     )}
                   >
@@ -133,21 +157,31 @@ export function SignUpForm() {
                       className="sr-only"
                     />
                     <span className="flex items-center gap-2 text-sm font-medium">
-                      <opt.icon className={cn("size-4", checked ? "text-brand" : "text-muted-foreground")} aria-hidden />
+                      <opt.icon
+                        className={cn("size-4", checked ? "text-brand" : "text-muted-foreground")}
+                        aria-hidden
+                      />
                       {opt.label}
                     </span>
-                    <span className="text-xs text-muted-foreground">{opt.desc}</span>
+                    <span className="text-muted-foreground text-xs">{opt.desc}</span>
                   </label>
                 );
               })}
             </div>
           )}
         />
-        <p className="text-xs text-muted-foreground">Researcher and admin roles are assigned by an administrator.</p>
+        <p className="text-muted-foreground text-xs">
+          Researcher and admin roles are assigned by an administrator.
+        </p>
       </fieldset>
 
       <FormField id="department" label="Department" error={err("department")}>
-        <select {...register("department")} {...fieldA11y("department", err("department"))} className={selectClass} disabled={isSubmitting}>
+        <select
+          {...register("department")}
+          {...fieldA11y("department", err("department"))}
+          className={selectClass}
+          disabled={isSubmitting}
+        >
           {DEPARTMENTS.map((d) => (
             <option key={d} value={d}>
               {d}
@@ -161,7 +195,9 @@ export function SignUpForm() {
           {...register("password")}
           id="password"
           aria-invalid={err("password") ? true : undefined}
-          aria-describedby={err("password") ? "password-error password-strength" : "password-strength"}
+          aria-describedby={
+            err("password") ? "password-error password-strength" : "password-strength"
+          }
           autoComplete="new-password"
           disabled={isSubmitting}
         />
@@ -193,13 +229,19 @@ export function SignUpForm() {
                 disabled={isSubmitting}
                 className="mt-0.5"
               />
-              <label htmlFor="consent" className="cursor-pointer text-sm leading-relaxed text-muted-foreground">
-                I understand that Parallax reports <strong className="font-medium text-foreground">potential similarity, not a
-                verdict</strong>, and that final academic judgment rests with human reviewers.
+              <label
+                htmlFor="consent"
+                className="text-muted-foreground cursor-pointer text-sm leading-relaxed"
+              >
+                I understand that Parallax reports{" "}
+                <strong className="text-foreground font-medium">
+                  potential similarity, not a verdict
+                </strong>
+                , and that final academic judgment rests with human reviewers.
               </label>
             </div>
             {err("consent") && (
-              <p id="consent-error" role="alert" className="text-xs font-medium text-danger">
+              <p id="consent-error" role="alert" className="text-danger text-xs font-medium">
                 {err("consent")}
               </p>
             )}

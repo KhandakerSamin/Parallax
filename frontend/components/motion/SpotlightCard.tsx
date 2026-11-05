@@ -9,7 +9,13 @@ type SpotlightCardProps = ComponentProps<"div"> & {
 };
 
 /** A card with a soft radial glow that follows a mouse pointer (desktop only, via CSS). */
-export function SpotlightCard({ className, spotColor, style, children, ...props }: SpotlightCardProps) {
+export function SpotlightCard({
+  className,
+  spotColor,
+  style,
+  children,
+  ...props
+}: SpotlightCardProps) {
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "mouse") return;
     const el = event.currentTarget;
@@ -22,7 +28,7 @@ export function SpotlightCard({ className, spotColor, style, children, ...props 
     <div
       onPointerMove={onPointerMove}
       className={cn(
-        "spotlight rounded-[var(--radius-card)] border border-border bg-card shadow-soft",
+        "spotlight border-border bg-card shadow-soft rounded-[var(--radius-card)] border",
         className,
       )}
       style={{ ...(spotColor ? { "--spot": spotColor } : {}), ...style } as CSSProperties}

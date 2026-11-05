@@ -23,7 +23,7 @@ export function UserMenu({ user }: { user: User }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="cursor-pointer rounded-full ring-offset-2 ring-offset-background transition-shadow hover:ring-2 hover:ring-border"
+          className="ring-offset-background hover:ring-border cursor-pointer rounded-full ring-offset-2 transition-shadow hover:ring-2"
           data-testid="user-menu"
         >
           <span className="sr-only">Account menu for {user.name}</span>
@@ -34,7 +34,7 @@ export function UserMenu({ user }: { user: User }) {
         <DropdownMenuContent>
           <DropdownMenuLabel>
             <p className="truncate text-sm font-semibold">{user.name}</p>
-            <p className="truncate text-xs font-normal text-muted-foreground">{user.email}</p>
+            <p className="text-muted-foreground truncate text-xs font-normal">{user.email}</p>
             <Badge variant="brand" className="mt-2">
               {ROLE_LABELS[user.role]}
             </Badge>
@@ -49,10 +49,13 @@ export function UserMenu({ user }: { user: User }) {
           <DropdownMenuItem disabled>
             <Settings aria-hidden />
             Settings
-            <span className="ml-auto text-[10px] text-muted-foreground">Soon</span>
+            <span className="text-muted-foreground ml-auto text-[10px]">Soon</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setConfirmOpen(true)} className="text-danger [&_svg]:!text-danger">
+          <DropdownMenuItem
+            onSelect={() => setConfirmOpen(true)}
+            className="text-danger [&_svg]:!text-danger"
+          >
             <LogOut aria-hidden />
             Sign out
           </DropdownMenuItem>

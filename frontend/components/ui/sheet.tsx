@@ -19,11 +19,14 @@ export function SheetContent({
 }: ComponentProps<typeof SheetPrimitive.Content>) {
   return (
     <SheetPrimitive.Portal>
-      <SheetPrimitive.Overlay data-lenis-prevent className="fixed inset-0 z-50 bg-[#0b0f1a]/50 backdrop-blur-sm data-[state=closed]:animate-[fade-out_200ms_ease-in] data-[state=open]:animate-[fade-in_200ms_ease-out]" />
+      <SheetPrimitive.Overlay
+        data-lenis-prevent
+        className="fixed inset-0 z-50 bg-[#0b0f1a]/50 backdrop-blur-sm data-[state=closed]:animate-[fade-out_200ms_ease-in] data-[state=open]:animate-[fade-in_200ms_ease-out]"
+      />
       <SheetPrimitive.Content
         data-lenis-prevent
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-[min(22rem,88vw)] flex-col border-l border-border bg-background p-6 shadow-lift",
+          "border-border bg-background shadow-lift fixed inset-y-0 right-0 z-50 flex w-[min(22rem,88vw)] flex-col border-l p-6",
           "data-[state=closed]:animate-[sheet-out_220ms_ease-in] data-[state=open]:animate-[sheet-in_320ms_cubic-bezier(0.22,1,0.36,1)]",
           className,
         )}
@@ -31,7 +34,7 @@ export function SheetContent({
       >
         {children}
         <SheetPrimitive.Close
-          className="absolute top-5 right-5 grid size-10 cursor-pointer place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-5 right-5 grid size-10 cursor-pointer place-items-center rounded-full transition-colors"
           aria-label="Close menu"
         >
           <X className="size-5" aria-hidden />

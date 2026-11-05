@@ -3,7 +3,10 @@ import { ALLOWED_EMAIL_DOMAINS, DEPARTMENTS } from "./config";
 import { SELF_SIGNUP_ROLES } from "./types";
 
 /** True when the email's domain is an allowed university domain (subdomains count). */
-export function isAllowedEmail(email: string, domains: readonly string[] = ALLOWED_EMAIL_DOMAINS): boolean {
+export function isAllowedEmail(
+  email: string,
+  domains: readonly string[] = ALLOWED_EMAIL_DOMAINS,
+): boolean {
   const domain = email.split("@")[1]?.toLowerCase();
   if (!domain) return false;
   return domains.some((d) => domain === d || domain.endsWith(`.${d}`));
@@ -56,7 +59,10 @@ export const signUpSchema = z
     department: z.enum(DEPARTMENTS, { error: "Choose your department" }),
     password: z
       .string()
-      .refine((p) => PASSWORD_RULES.every((rule) => rule.test(p)), "Password doesn't meet all requirements"),
+      .refine(
+        (p) => PASSWORD_RULES.every((rule) => rule.test(p)),
+        "Password doesn't meet all requirements",
+      ),
     confirmPassword: z.string().min(1, "Confirm your password"),
     consent: z.boolean().refine((v) => v, "Please confirm you understand how results are reported"),
   })

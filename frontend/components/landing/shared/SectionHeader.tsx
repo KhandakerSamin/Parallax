@@ -12,7 +12,14 @@ type SectionHeaderProps = {
 };
 
 /** Eyebrow + H2 + intro used at the top of every landing section. */
-export function SectionHeader({ id, eyebrow, title, intro, align = "center", className }: SectionHeaderProps) {
+export function SectionHeader({
+  id,
+  eyebrow,
+  title,
+  intro,
+  align = "center",
+  className,
+}: SectionHeaderProps) {
   return (
     <Reveal
       as="header"
@@ -22,14 +29,14 @@ export function SectionHeader({ id, eyebrow, title, intro, align = "center", cla
         className,
       )}
     >
-      <p className="text-sm font-semibold tracking-wide text-brand uppercase">{eyebrow}</p>
+      <p className="text-brand text-sm font-semibold tracking-wide uppercase">{eyebrow}</p>
       <h2 id={id} className="text-h2 mt-3 text-balance">
         {title}
       </h2>
       {intro && (
         <p
           className={cn(
-            "text-lead mt-5 max-w-[65ch] text-pretty text-muted-foreground",
+            "text-lead text-muted-foreground mt-5 max-w-[65ch] text-pretty",
             align === "center" && "mx-auto",
           )}
         >

@@ -59,7 +59,7 @@ export function Navbar() {
                     <motion.span
                       layoutId="nav-active"
                       aria-hidden
-                      className="absolute inset-0 rounded-full bg-muted"
+                      className="bg-muted absolute inset-0 rounded-full"
                       transition={{ type: "spring", stiffness: 380, damping: 32 }}
                     />
                   )}
@@ -72,7 +72,7 @@ export function Navbar() {
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
           {status === "loading" ? (
-            <span aria-hidden className="size-9 animate-pulse rounded-full bg-muted" />
+            <span aria-hidden className="bg-muted size-9 animate-pulse rounded-full" />
           ) : user ? (
             <UserMenu user={user} />
           ) : (

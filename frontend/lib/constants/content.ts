@@ -193,7 +193,11 @@ export const PROBLEM = {
   before: { score: "34%", caption: "One number, no context" },
   after: {
     caption: "Four perspectives with section-level evidence",
-    items: ["Problem statement matches", "Same method: MobileNetV2", "Same architecture: 4 of 5 components"],
+    items: [
+      "Problem statement matches",
+      "Same method: MobileNetV2",
+      "Same architecture: 4 of 5 components",
+    ],
   },
 } as const;
 
@@ -206,7 +210,8 @@ export const STEPS: readonly Step[] = [
   {
     icon: Upload,
     title: "Upload",
-    summary: "Add a proposal, abstract, thesis or project report as a PDF or plain text, with its metadata.",
+    summary:
+      "Add a proposal, abstract, thesis or project report as a PDF or plain text, with its metadata.",
     details: ["Digital PDF or pasted text", "Title, type, year, department"],
   },
   {
@@ -218,13 +223,15 @@ export const STEPS: readonly Step[] = [
   {
     icon: Layers,
     title: "Detect sections & language",
-    summary: "Each part is labelled (Abstract, Problem, Methodology, Architecture…) along with its language.",
+    summary:
+      "Each part is labelled (Abstract, Problem, Methodology, Architecture…) along with its language.",
     details: ["Bangla, English or mixed", "Section-aware comparison"],
   },
   {
     icon: Braces,
     title: "Chunk & embed",
-    summary: "Text is split into overlapping chunks of about 300 words, and each chunk gets a multilingual embedding.",
+    summary:
+      "Text is split into overlapping chunks of about 300 words, and each chunk gets a multilingual embedding.",
     details: ["Never one vector per document", "Overlap keeps context across chunk edges"],
   },
   {
@@ -237,7 +244,8 @@ export const STEPS: readonly Step[] = [
   {
     icon: FileText,
     title: "Explain & report",
-    summary: "Each match is shown with section-level evidence and a “why similar” summary, downloadable as a PDF.",
+    summary:
+      "Each match is shown with section-level evidence and a “why similar” summary, downloadable as a PDF.",
     details: ["Highlighted passages side by side", "Reviewer records the decision"],
   },
 ];
@@ -335,7 +343,10 @@ export const EXPLAIN = {
       { label: "Method", chips: ["Face recognition", "MobileNetV2 embeddings"] },
       { label: "Inputs", chips: ["Webcam frames", "Enrolled student photos"] },
       { label: "Outputs", chips: ["Attendance records", "Reports"] },
-      { label: "Architecture", chips: ["Web Client", "REST API", "ML Service", "Database", "Dashboard"] },
+      {
+        label: "Architecture",
+        chips: ["Web Client", "REST API", "ML Service", "Database", "Dashboard"],
+      },
     ],
   },
 } as const;
@@ -352,9 +363,19 @@ export const MULTILINGUAL = {
     "Cross-lingual matches surfaced as evidence, not hidden",
   ],
   phrases: [
-    { id: "en", label: "English", text: "Automated attendance using face recognition", lang: undefined },
+    {
+      id: "en",
+      label: "English",
+      text: "Automated attendance using face recognition",
+      lang: undefined,
+    },
     { id: "bn", label: "Bangla", text: "ফেস রিকগনিশন ব্যবহার করে স্বয়ংক্রিয় হাজিরা", lang: "bn" },
-    { id: "banglish", label: "Banglish", text: "face recognition diye automatic attendance", lang: undefined },
+    {
+      id: "banglish",
+      label: "Banglish",
+      text: "face recognition diye automatic attendance",
+      lang: undefined,
+    },
   ],
   outlier: { label: "Unrelated", text: "Online grocery delivery platform" },
   caption: "Illustration of a shared embedding space, not real model output.",
@@ -424,12 +445,27 @@ export const RESPONSIBLE = {
   title: "Responsible by design.",
   icon: ShieldCheck,
   principles: [
-    { title: "Potential similarity only", body: "Parallax reports how similar two documents are. It never delivers a plagiarism verdict." },
+    {
+      title: "Potential similarity only",
+      body: "Parallax reports how similar two documents are. It never delivers a plagiarism verdict.",
+    },
     { title: "Humans decide", body: "Final academic judgment always stays with human reviewers." },
-    { title: "Deterministic scoring", body: "Scores are reproducible. Language models never decide the score." },
-    { title: "Role-based access", body: "People only see the documents and results their role allows." },
-    { title: "Author anonymisation", body: "Author identities can be hidden while a match is being reviewed." },
-    { title: "Attribution & permission", body: "Corpus documents are used with attribution and permission." },
+    {
+      title: "Deterministic scoring",
+      body: "Scores are reproducible. Language models never decide the score.",
+    },
+    {
+      title: "Role-based access",
+      body: "People only see the documents and results their role allows.",
+    },
+    {
+      title: "Author anonymisation",
+      body: "Author identities can be hidden while a match is being reviewed.",
+    },
+    {
+      title: "Attribution & permission",
+      body: "Corpus documents are used with attribution and permission.",
+    },
   ],
 } as const;
 

@@ -27,17 +27,17 @@ const COLUMNS = [
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border bg-card/40">
+    <footer className="border-border bg-card/40 border-t">
       <div className="container-page py-16">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
             <Logo />
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">{SITE.tagline}</p>
+            <p className="text-muted-foreground mt-4 max-w-xs text-sm">{SITE.tagline}</p>
             <a
               href={SITE.github}
               target="_blank"
               rel="noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-muted"
+              className="border-border hover:bg-muted mt-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
             >
               View on GitHub <ExternalLink className="size-3.5" aria-hidden />
             </a>
@@ -49,7 +49,10 @@ export function Footer() {
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    <Link
+                      href={link.href}
+                      className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -60,7 +63,7 @@ export function Footer() {
 
           <div>
             <h2 className="text-sm font-semibold">Project</h2>
-            <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
+            <ul className="text-muted-foreground mt-4 space-y-2.5 text-sm">
               {SITE.team.map((name) => (
                 <li key={name}>{name}</li>
               ))}
@@ -75,7 +78,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-border pt-8 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="border-border text-muted-foreground mt-14 flex flex-col gap-3 border-t pt-8 text-xs md:flex-row md:items-center md:justify-between">
           <p>
             © {year} Parallax · SE 331 Capstone · {SITE.university}
           </p>

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { createContext, useContext, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 

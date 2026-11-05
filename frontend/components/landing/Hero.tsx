@@ -23,8 +23,8 @@ export function Hero() {
       <div className="container-page grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
         <div className="max-w-2xl">
           <div {...rise(0)}>
-            <p className="glass inline-flex max-w-full items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-soft sm:text-sm">
-              <Sparkles className="size-3.5 shrink-0 text-brand" aria-hidden />
+            <p className="glass border-border text-muted-foreground shadow-soft inline-flex max-w-full items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium sm:text-sm">
+              <Sparkles className="text-brand size-3.5 shrink-0" aria-hidden />
               <span className="truncate">{HERO.eyebrow}</span>
             </p>
           </div>
@@ -34,7 +34,10 @@ export function Hero() {
             <span className="text-gradient">{HERO.titleEmphasis}</span>
           </h1>
 
-          <p className="text-lead hero-rise mt-6 max-w-[60ch] text-muted-foreground" style={rise(160).style}>
+          <p
+            className="text-lead hero-rise text-muted-foreground mt-6 max-w-[60ch]"
+            style={rise(160).style}
+          >
             {SITE.oneLiner}
           </p>
 
@@ -50,8 +53,11 @@ export function Hero() {
             </Button>
           </div>
 
-          <p className="hero-rise mt-7 flex items-center gap-2 text-sm text-muted-foreground" style={rise(320).style}>
-            <ShieldCheck className="size-4 shrink-0 text-accent" aria-hidden />
+          <p
+            className="hero-rise text-muted-foreground mt-7 flex items-center gap-2 text-sm"
+            style={rise(320).style}
+          >
+            <ShieldCheck className="text-accent size-4 shrink-0" aria-hidden />
             {HERO.trust}
           </p>
         </div>

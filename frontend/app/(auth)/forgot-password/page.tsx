@@ -9,11 +9,11 @@ export const metadata: Metadata = { title: "Reset password — Parallax" };
 export default function ForgotPasswordPage() {
   return (
     <div className="text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-semantic-soft text-brand">
+      <span className="bg-semantic-soft text-brand mx-auto grid size-14 place-items-center rounded-2xl">
         <KeyRound className="size-6" aria-hidden />
       </span>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">Reset your password</h1>
-      <p className="mt-3 text-muted-foreground">
+      <p className="text-muted-foreground mt-3">
         Self-service password reset is coming soon. Until then, ask your department&apos;s Parallax
         administrator to reset it for you.
       </p>

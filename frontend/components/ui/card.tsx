@@ -5,7 +5,7 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-border bg-card text-card-foreground shadow-soft",
+        "border-border bg-card text-card-foreground shadow-soft rounded-[var(--radius-card)] border",
         className,
       )}
       {...props}
@@ -22,7 +22,7 @@ export function CardTitle({ className, ...props }: ComponentProps<"h3">) {
 }
 
 export function CardDescription({ className, ...props }: ComponentProps<"p">) {
-  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
+  return <p className={cn("text-muted-foreground text-sm", className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: ComponentProps<"div">) {

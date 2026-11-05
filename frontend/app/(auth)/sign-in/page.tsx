@@ -12,15 +12,15 @@ export default function SignInPage() {
   return (
     <>
       <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
-      <p className="mt-2 text-muted-foreground">Sign in to check documents and review matches.</p>
+      <p className="text-muted-foreground mt-2">Sign in to check documents and review matches.</p>
       <div className="mt-8">
         <Suspense>
           <SignInForm />
         </Suspense>
       </div>
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-8 text-center text-sm">
         New to Parallax?{" "}
-        <Link href="/sign-up" className="font-medium text-brand hover:underline">
+        <Link href="/sign-up" className="text-brand font-medium hover:underline">
           Create an account
         </Link>
       </p>

@@ -17,14 +17,21 @@ export function ScoreBar({ perspective, score, delay = 0, compact = false }: Sco
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
-        <span className="flex items-center gap-1.5 font-medium" style={{ color: perspective.color }}>
+        <span
+          className="flex items-center gap-1.5 font-medium"
+          style={{ color: perspective.color }}
+        >
           <Icon className="size-3.5" aria-hidden />
           <span className="text-foreground">{perspective.name}</span>
         </span>
-        <span className="font-mono text-muted-foreground tabular-nums">{formatScore(score)}</span>
+        <span className="text-muted-foreground font-mono tabular-nums">{formatScore(score)}</span>
       </div>
       <div
-        className={compact ? "h-1.5 overflow-hidden rounded-full bg-muted" : "h-2 overflow-hidden rounded-full bg-muted"}
+        className={
+          compact
+            ? "bg-muted h-1.5 overflow-hidden rounded-full"
+            : "bg-muted h-2 overflow-hidden rounded-full"
+        }
         role="meter"
         aria-label={`${perspective.name} score`}
         aria-valuemin={0}

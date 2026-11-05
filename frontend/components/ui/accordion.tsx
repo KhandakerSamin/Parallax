@@ -11,9 +11,7 @@ export function AccordionItem({
   className,
   ...props
 }: ComponentProps<typeof AccordionPrimitive.Item>) {
-  return (
-    <AccordionPrimitive.Item className={cn("border-b border-border", className)} {...props} />
-  );
+  return <AccordionPrimitive.Item className={cn("border-border border-b", className)} {...props} />;
 }
 
 export function AccordionTrigger({
@@ -25,7 +23,7 @@ export function AccordionTrigger({
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         className={cn(
-          "group flex flex-1 cursor-pointer items-center justify-between gap-4 py-5 text-left text-base font-medium transition-colors hover:text-brand md:text-lg",
+          "group hover:text-brand flex flex-1 cursor-pointer items-center justify-between gap-4 py-5 text-left text-base font-medium transition-colors md:text-lg",
           className,
         )}
         {...props}
@@ -33,7 +31,7 @@ export function AccordionTrigger({
         {children}
         <ChevronDown
           aria-hidden
-          className="size-5 shrink-0 text-muted-foreground transition-transform duration-300 group-data-[state=open]:rotate-180"
+          className="text-muted-foreground size-5 shrink-0 transition-transform duration-300 group-data-[state=open]:rotate-180"
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -50,7 +48,7 @@ export function AccordionContent({
       className="overflow-hidden data-[state=closed]:animate-[accordion-up_250ms_ease-out] data-[state=open]:animate-[accordion-down_300ms_cubic-bezier(0.22,1,0.36,1)]"
       {...props}
     >
-      <div className={cn("max-w-[70ch] pb-6 text-muted-foreground", className)}>{children}</div>
+      <div className={cn("text-muted-foreground max-w-[70ch] pb-6", className)}>{children}</div>
     </AccordionPrimitive.Content>
   );
 }

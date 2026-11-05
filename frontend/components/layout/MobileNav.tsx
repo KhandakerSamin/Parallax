@@ -54,7 +54,7 @@ export function MobileNav({ active, hrefFor, signedIn }: MobileNavProps) {
                     href={hrefFor(link.id)}
                     aria-current={active === link.id ? "true" : undefined}
                     className={cn(
-                      "block rounded-xl px-3 py-3 text-lg font-medium transition-colors hover:bg-muted",
+                      "hover:bg-muted block rounded-xl px-3 py-3 text-lg font-medium transition-colors",
                       active === link.id ? "text-brand" : "text-foreground",
                     )}
                   >
