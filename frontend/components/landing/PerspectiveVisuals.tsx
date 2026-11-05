@@ -26,8 +26,8 @@ export function LexicalVisual() {
           transition={{ delay: i * 0.05, duration: 0.4 }}
           className={
             shared
-              ? "rounded-md bg-lexical-soft px-2 py-1 font-mono text-xs text-lexical"
-              : "rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground"
+              ? "bg-lexical-soft text-lexical rounded-md px-2 py-1 font-mono text-xs"
+              : "bg-muted text-muted-foreground rounded-md px-2 py-1 font-mono text-xs"
           }
         >
           {w}
@@ -49,7 +49,12 @@ export function SemanticVisual() {
     { from: [40, 30], to: [82, 34], c: "var(--muted-foreground)" },
   ];
   return (
-    <svg viewBox="0 0 100 70" className="h-28 w-full" role="img" aria-label="Similar meanings cluster together in embedding space">
+    <svg
+      viewBox="0 0 100 70"
+      className="h-28 w-full"
+      role="img"
+      aria-label="Similar meanings cluster together in embedding space"
+    >
       <circle cx="34" cy="46" r="17" fill="var(--semantic-soft)" />
       {points.map((p, i) => (
         <motion.circle
@@ -76,14 +81,18 @@ export function ConceptVisual() {
   return (
     <dl className="space-y-1.5 text-xs">
       {fields.map(([k, v, match]) => (
-        <div key={k} className="flex items-center gap-2 rounded-lg bg-muted px-2.5 py-1.5">
-          <dt className="w-16 shrink-0 text-muted-foreground">{k}</dt>
+        <div key={k} className="bg-muted flex items-center gap-2 rounded-lg px-2.5 py-1.5">
+          <dt className="text-muted-foreground w-16 shrink-0">{k}</dt>
           <dd className="flex min-w-0 flex-1 items-center justify-between gap-2">
             <span className="truncate">{v}</span>
             {match ? (
-              <Check className="size-3.5 shrink-0 text-concept" strokeWidth={3} aria-label="match" />
+              <Check
+                className="text-concept size-3.5 shrink-0"
+                strokeWidth={3}
+                aria-label="match"
+              />
             ) : (
-              <Minus className="size-3.5 shrink-0 text-muted-foreground" aria-label="different" />
+              <Minus className="text-muted-foreground size-3.5 shrink-0" aria-label="different" />
             )}
           </dd>
         </div>
@@ -95,9 +104,22 @@ export function ConceptVisual() {
 export function StructuralVisual() {
   const box = "fill-[var(--card)] stroke-[var(--structural)]";
   return (
-    <svg viewBox="0 0 220 96" className="h-28 w-full" role="img" aria-label="Architecture: web client to REST API to ML service, with database and dashboard">
+    <svg
+      viewBox="0 0 220 96"
+      className="h-28 w-full"
+      role="img"
+      aria-label="Architecture: web client to REST API to ML service, with database and dashboard"
+    >
       <defs>
-        <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+        <marker
+          id="arrow"
+          viewBox="0 0 8 8"
+          refX="7"
+          refY="4"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto"
+        >
           <path d="M0 0 8 4 0 8z" fill="var(--structural)" />
         </marker>
       </defs>
@@ -109,18 +131,26 @@ export function StructuralVisual() {
         [156, 62, "Dashboard"],
       ].map(([x, y, label]) => (
         <g key={label as string}>
-          <rect x={x as number} y={y as number} width="60" height="26" rx="7" className={box} strokeWidth="1.5" />
-          <text x={(x as number) + 30} y={(y as number) + 17} textAnchor="middle" className="fill-[var(--foreground)] text-[9px]">
+          <rect
+            x={x as number}
+            y={y as number}
+            width="60"
+            height="26"
+            rx="7"
+            className={box}
+            strokeWidth="1.5"
+          />
+          <text
+            x={(x as number) + 30}
+            y={(y as number) + 17}
+            textAnchor="middle"
+            className="fill-[var(--foreground)] text-[9px]"
+          >
             {label}
           </text>
         </g>
       ))}
-      {[
-        "M64 21h14",
-        "M140 21h14",
-        "M110 34v26",
-        "M186 34v26",
-      ].map((d, i) => (
+      {["M64 21h14", "M140 21h14", "M110 34v26", "M186 34v26"].map((d, i) => (
         <motion.path
           key={d}
           d={d}

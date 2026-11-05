@@ -34,11 +34,13 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
       <AlertDialogContent>
-        <span className="grid size-11 place-items-center rounded-xl bg-structural-soft text-structural">
+        <span className="bg-structural-soft text-structural grid size-11 place-items-center rounded-xl">
           <LogOut className="size-5" aria-hidden />
         </span>
         <AlertDialogTitle className="mt-4">Sign out of Parallax?</AlertDialogTitle>
-        <AlertDialogDescription>You&apos;ll need to sign in again to view your reports.</AlertDialogDescription>
+        <AlertDialogDescription>
+          You&apos;ll need to sign in again to view your reports.
+        </AlertDialogDescription>
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AlertDialogCancel asChild>
             <Button variant="outline" disabled={pending}>

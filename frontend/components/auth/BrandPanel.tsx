@@ -64,7 +64,11 @@ export function BrandPanel() {
 
       {/* Floating layered report cards */}
       <div className="relative mx-auto h-80 w-full max-w-md">
-        <DriftCard delay={0} distance={10} className="absolute top-0 right-0 w-64 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+        <DriftCard
+          delay={0}
+          distance={10}
+          className="absolute top-0 right-0 w-64 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md"
+        >
           <p className="text-xs text-white/60">Top match</p>
           <p className="mt-1 flex items-center gap-2 text-sm font-medium">
             <FileText className="size-4 text-[#a5b4fc]" />
@@ -72,10 +76,16 @@ export function BrandPanel() {
           </p>
           <p className="mt-0.5 text-xs text-white/60">2023 · Project Report</p>
         </DriftCard>
-        <DriftCard delay={1.5} distance={14} className="absolute top-24 left-0 w-72 rounded-2xl border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-md">
+        <DriftCard
+          delay={1.5}
+          distance={14}
+          className="absolute top-24 left-0 w-72 rounded-2xl border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-md"
+        >
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold">Similarity report</p>
-            <span className="rounded-full bg-[#14b8a6]/20 px-2 py-0.5 text-[10px] text-[#5eead4]">Sample</span>
+            <span className="rounded-full bg-[#14b8a6]/20 px-2 py-0.5 text-[10px] text-[#5eead4]">
+              Sample
+            </span>
           </div>
           <div className="mt-4 space-y-2.5">
             {PERSPECTIVES.map((p, i) => (
@@ -94,7 +104,11 @@ export function BrandPanel() {
             ))}
           </div>
         </DriftCard>
-        <DriftCard delay={3} distance={8} className="absolute right-6 bottom-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
+        <DriftCard
+          delay={3}
+          distance={8}
+          className="absolute right-6 bottom-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md"
+        >
           <p className="text-xs text-white/60">Hybrid score</p>
           <p className="text-2xl font-semibold">0.72</p>
         </DriftCard>

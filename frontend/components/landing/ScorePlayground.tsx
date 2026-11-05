@@ -54,7 +54,7 @@ export function ScorePlayground() {
   const final = hybrid(weights);
 
   return (
-    <div className="grid gap-6 rounded-3xl border border-border bg-card p-5 shadow-lift sm:p-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
+    <div className="border-border bg-card shadow-lift grid gap-6 rounded-3xl border p-5 sm:p-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-h3">Hybrid score playground</h3>
@@ -72,9 +72,9 @@ export function ScorePlayground() {
             ))}
           </div>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Drag a weight and the others adjust so all four always sum to 1. Perspective scores
-          below are a fixed sample pair.
+        <p className="text-muted-foreground mt-2 text-sm">
+          Drag a weight and the others adjust so all four always sum to 1. Perspective scores below
+          are a fixed sample pair.
         </p>
 
         <div className="mt-8 space-y-6">
@@ -84,11 +84,13 @@ export function ScorePlayground() {
                 <span className="flex items-center gap-2 font-medium">
                   <p.icon className="size-4" style={{ color: p.color }} aria-hidden />
                   {p.name}
-                  <span className="text-xs font-normal text-muted-foreground">
+                  <span className="text-muted-foreground text-xs font-normal">
                     score {formatScore(SAMPLE_SCORES[p.key])}
                   </span>
                 </span>
-                <span className="font-mono text-sm tabular-nums">w = {formatScore(weights[p.key])}</span>
+                <span className="font-mono text-sm tabular-nums">
+                  w = {formatScore(weights[p.key])}
+                </span>
               </div>
               <Slider
                 value={[weights[p.key]]}
@@ -97,22 +99,24 @@ export function ScorePlayground() {
                 step={0.01}
                 color={p.color}
                 thumbLabel={`${p.name} weight`}
-                onValueChange={([v]) => v !== undefined && setWeights((w) => rebalance(w, p.key, v))}
+                onValueChange={([v]) =>
+                  v !== undefined && setWeights((w) => rebalance(w, p.key, v))
+                }
               />
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-col justify-between gap-6 rounded-2xl bg-muted p-5 sm:p-6">
+      <div className="bg-muted flex flex-col justify-between gap-6 rounded-2xl p-5 sm:p-6">
         <div>
-          <p className="text-sm text-muted-foreground">Hybrid score (sample pair)</p>
-          <p className="mt-1 text-6xl font-semibold tracking-tight text-gradient">
+          <p className="text-muted-foreground text-sm">Hybrid score (sample pair)</p>
+          <p className="text-gradient mt-1 text-6xl font-semibold tracking-tight">
             <AnimatedScore value={final} />
           </p>
 
           {/* Each segment is one perspective's contribution w·s */}
-          <div className="mt-5 flex h-3 overflow-hidden rounded-full bg-card" aria-hidden>
+          <div className="bg-card mt-5 flex h-3 overflow-hidden rounded-full" aria-hidden>
             {PERSPECTIVES.map((p) => (
               <motion.div
                 key={p.key}
@@ -125,7 +129,10 @@ export function ScorePlayground() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-card p-4 font-mono text-xs leading-relaxed sm:text-[13px]" aria-live="polite">
+        <div
+          className="bg-card rounded-xl p-4 font-mono text-xs leading-relaxed sm:text-[13px]"
+          aria-live="polite"
+        >
           <p className="text-muted-foreground">Final =</p>
           {PERSPECTIVES.map((p, i) => (
             <p key={p.key}>

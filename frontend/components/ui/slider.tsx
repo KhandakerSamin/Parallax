@@ -20,12 +20,12 @@ export function Slider({ className, color, thumbLabel, ...props }: SliderProps) 
       style={{ "--slider": color ?? "var(--primary)" } as CSSProperties}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-muted">
+      <SliderPrimitive.Track className="bg-muted relative h-2 w-full grow overflow-hidden rounded-full">
         <SliderPrimitive.Range className="absolute h-full rounded-full bg-[var(--slider)]" />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         aria-label={thumbLabel}
-        className="block size-5 cursor-grab rounded-full border-2 border-[var(--slider)] bg-card shadow-soft transition-transform hover:scale-110 focus-visible:scale-110 active:cursor-grabbing"
+        className="bg-card shadow-soft block size-5 cursor-grab rounded-full border-2 border-[var(--slider)] transition-transform hover:scale-110 focus-visible:scale-110 active:cursor-grabbing"
       />
     </SliderPrimitive.Root>
   );

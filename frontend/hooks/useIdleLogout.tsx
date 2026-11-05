@@ -29,7 +29,8 @@ export function useIdleLogout(timeoutMs = IDLE_TIMEOUT_MS, warningMs = IDLE_WARN
         toast.dismiss(WARNING_TOAST_ID);
       }
     };
-    for (const event of ACTIVITY_EVENTS) window.addEventListener(event, markActive, { passive: true });
+    for (const event of ACTIVITY_EVENTS)
+      window.addEventListener(event, markActive, { passive: true });
 
     const timer = window.setInterval(() => {
       const idle = Date.now() - lastActivity.current;

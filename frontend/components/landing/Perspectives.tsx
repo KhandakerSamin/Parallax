@@ -55,7 +55,7 @@ export function Perspectives() {
                   </span>
                   <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
                 </div>
-                <p className="mt-4 text-muted-foreground">{p.measures}</p>
+                <p className="text-muted-foreground mt-4">{p.measures}</p>
                 <p className="mt-2 text-sm">
                   <span className="font-medium">Method: </span>
                   <span className="text-muted-foreground">{p.method}</span>

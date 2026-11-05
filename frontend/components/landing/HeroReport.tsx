@@ -15,13 +15,13 @@ export function HeroReport() {
     <TiltStage className="relative mx-auto h-[33rem] w-full max-w-[30rem] sm:h-[34rem]">
       {/* Back plane: corpus search, farthest from the viewer */}
       <TiltPlane depth={8} className="absolute top-0 right-0 w-[78%]">
-        <div className="rounded-2xl border border-border bg-card/70 p-4 opacity-80 shadow-soft backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="border-border bg-card/70 shadow-soft rounded-2xl border p-4 opacity-80 backdrop-blur-sm">
+          <div className="text-muted-foreground flex items-center gap-2 text-xs">
             <Search className="size-3.5" aria-hidden /> Searching DIU corpus…
           </div>
           <div className="mt-3 space-y-2" aria-hidden>
             {[86, 64, 72].map((w) => (
-              <div key={w} className="h-2 rounded-full bg-muted" style={{ width: `${w}%` }} />
+              <div key={w} className="bg-muted h-2 rounded-full" style={{ width: `${w}%` }} />
             ))}
           </div>
         </div>
@@ -29,8 +29,8 @@ export function HeroReport() {
 
       {/* Middle plane: perspective chips */}
       <TiltPlane depth={18} className="absolute top-14 left-0 w-[70%]">
-        <div className="rounded-2xl border border-border bg-card/85 p-3.5 shadow-soft backdrop-blur-sm">
-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="border-border bg-card/85 shadow-soft rounded-2xl border p-3.5 backdrop-blur-sm">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
             Four perspectives
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -47,14 +47,14 @@ export function HeroReport() {
       {/* Front plane: the report */}
       <TiltPlane depth={34} className="absolute inset-x-[4%] bottom-0 sm:inset-x-[6%]">
         <div
-          className="rounded-3xl border border-border bg-card p-5 shadow-lift sm:p-6"
+          className="border-border bg-card shadow-lift rounded-3xl border p-5 sm:p-6"
           role="img"
           aria-label={`Sample similarity report: overall score ${report.overall}, top match ${report.match.title}, ${report.match.year}`}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold">{report.label}</p>
-              <p className="text-xs text-muted-foreground">proposal_v2.pdf · 14 sections</p>
+              <p className="text-muted-foreground text-xs">proposal_v2.pdf · 14 sections</p>
             </div>
             <Badge variant="accent">{report.sampleTag}</Badge>
           </div>
@@ -74,24 +74,24 @@ export function HeroReport() {
             </div>
           </div>
 
-          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-muted p-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-card text-brand">
+          <div className="bg-muted mt-5 flex items-center gap-3 rounded-2xl p-3">
+            <span className="bg-card text-brand grid size-9 shrink-0 place-items-center rounded-xl">
               <FileText className="size-4" aria-hidden />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{report.match.title}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {report.match.year} · {report.match.type}
               </p>
             </div>
-            <span className="text-xs font-medium text-muted-foreground">Top match</span>
+            <span className="text-muted-foreground text-xs font-medium">Top match</span>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <span className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-medium text-primary-foreground">
+            <span className="bg-primary text-primary-foreground inline-flex h-9 items-center justify-center gap-1.5 rounded-full text-xs font-medium">
               View comparison <ArrowUpRight className="size-3.5" aria-hidden />
             </span>
-            <span className="inline-flex h-9 items-center justify-center rounded-full border border-border text-xs font-medium">
+            <span className="border-border inline-flex h-9 items-center justify-center rounded-full border text-xs font-medium">
               View evidence
             </span>
           </div>

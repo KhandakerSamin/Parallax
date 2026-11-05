@@ -21,7 +21,13 @@ function format(n: number, decimals: number): string {
 }
 
 /** Counts from 0 to `value` once visible. Screen readers get the final value. */
-export function CountUp({ value, suffix = "", decimals = 0, duration = 1.6, className }: CountUpProps) {
+export function CountUp({
+  value,
+  suffix = "",
+  decimals = 0,
+  duration = 1.6,
+  className,
+}: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -15% 0px" });
   const reduced = useReducedMotion();

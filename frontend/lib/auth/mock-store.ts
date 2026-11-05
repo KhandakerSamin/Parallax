@@ -77,7 +77,9 @@ export function verifyCredentials(identifier: string, password: string): User | 
 
 export type CreateUserResult = { user: User } | { conflict: "email" | "universityId" };
 
-export function createUser(input: Omit<User, "id"> & { password: string; role: Role }): CreateUserResult {
+export function createUser(
+  input: Omit<User, "id"> & { password: string; role: Role },
+): CreateUserResult {
   const email = input.email.trim().toLowerCase();
   for (const u of store.users.values()) {
     if (u.email === email) return { conflict: "email" };

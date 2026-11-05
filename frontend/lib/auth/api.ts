@@ -31,12 +31,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function signIn(input: SignInInput): Promise<User> {
-  const { user } = await request<{ user: User }>("/login", { method: "POST", body: JSON.stringify(input) });
+  const { user } = await request<{ user: User }>("/login", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
   return user;
 }
 
 export async function signUp(input: SignUpInput): Promise<User> {
-  const { user } = await request<{ user: User }>("/register", { method: "POST", body: JSON.stringify(input) });
+  const { user } = await request<{ user: User }>("/register", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
   return user;
 }
 

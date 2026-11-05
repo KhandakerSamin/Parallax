@@ -22,7 +22,7 @@ export function PasswordStrength({ password, id }: { password: string; id: strin
   return (
     <div id={id} className="space-y-2.5">
       <div className="flex items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+        <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
           <motion.div
             className="h-full origin-left rounded-full"
             animate={{ scaleX: score / PASSWORD_RULES.length, backgroundColor: level.color }}
@@ -30,7 +30,11 @@ export function PasswordStrength({ password, id }: { password: string; id: strin
             transition={{ type: "spring", stiffness: 200, damping: 26 }}
           />
         </div>
-        <span className="w-16 text-right text-xs font-medium" style={{ color: password ? level.color : undefined }} aria-live="polite">
+        <span
+          className="w-16 text-right text-xs font-medium"
+          style={{ color: password ? level.color : undefined }}
+          aria-live="polite"
+        >
           {password ? level.label : ""}
         </span>
       </div>
@@ -45,7 +49,11 @@ export function PasswordStrength({ password, id }: { password: string; id: strin
                 met ? "text-concept" : "text-muted-foreground",
               )}
             >
-              {met ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : <X className="size-3.5" aria-hidden />}
+              {met ? (
+                <Check className="size-3.5" strokeWidth={3} aria-hidden />
+              ) : (
+                <X className="size-3.5" aria-hidden />
+              )}
               {rule.label}
               <span className="sr-only">{met ? "(met)" : "(not met)"}</span>
             </li>

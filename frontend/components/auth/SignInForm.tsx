@@ -62,7 +62,11 @@ export function SignInForm() {
       <GoogleButton />
       <OrDivider />
 
-      <FormField id="identifier" label="University email or student/staff ID" error={errors.identifier?.message}>
+      <FormField
+        id="identifier"
+        label="University email or student/staff ID"
+        error={errors.identifier?.message}
+      >
         <Input
           {...register("identifier")}
           {...fieldA11y("identifier", errors.identifier?.message)}
@@ -77,7 +81,7 @@ export function SignInForm() {
         label="Password"
         error={errors.password?.message}
         aside={
-          <Link href="/forgot-password" className="text-xs font-medium text-brand hover:underline">
+          <Link href="/forgot-password" className="text-brand text-xs font-medium hover:underline">
             Forgot password?
           </Link>
         }
@@ -101,7 +105,7 @@ export function SignInForm() {
               onCheckedChange={(v) => field.onChange(v === true)}
               disabled={isSubmitting}
             />
-            <Label htmlFor="remember" className="font-normal text-muted-foreground">
+            <Label htmlFor="remember" className="text-muted-foreground font-normal">
               Remember me for 30 days
             </Label>
           </div>
@@ -113,9 +117,10 @@ export function SignInForm() {
         {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
 
-      <p id="signin-demo" className="rounded-xl bg-muted px-4 py-3 text-xs text-muted-foreground">
-        Demo account (mock mode): <span className="font-mono text-foreground">student@diu.edu.bd</span> /{" "}
-        <span className="font-mono text-foreground">Parallax#2026</span>
+      <p id="signin-demo" className="bg-muted text-muted-foreground rounded-xl px-4 py-3 text-xs">
+        Demo account (mock mode):{" "}
+        <span className="text-foreground font-mono">student@diu.edu.bd</span> /{" "}
+        <span className="text-foreground font-mono">Parallax#2026</span>
       </p>
     </motion.form>
   );

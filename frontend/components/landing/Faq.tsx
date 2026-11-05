@@ -1,5 +1,10 @@
 import { Reveal } from "@/components/motion/Reveal";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { FAQ } from "@/lib/constants/content";
 import { SectionHeader } from "./shared/SectionHeader";
 
@@ -15,7 +20,7 @@ export function Faq() {
           align="left"
         />
         <Reveal>
-          <Accordion type="single" collapsible className="border-t border-border">
+          <Accordion type="single" collapsible className="border-border border-t">
             {FAQ.map((item, i) => (
               <AccordionItem key={item.q} value={`q${i}`}>
                 <AccordionTrigger>{item.q}</AccordionTrigger>

@@ -19,10 +19,10 @@ export function Roles() {
             <StaggerItem as="li" key={role.role}>
               <SpotlightCard
                 spotColor={role.color}
-                className="group h-full p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-lift"
+                className="group hover:shadow-lift h-full p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5"
               >
                 <span
-                  className="grid size-12 place-items-center rounded-2xl bg-muted transition-transform duration-300 group-hover:scale-110"
+                  className="bg-muted grid size-12 place-items-center rounded-2xl transition-transform duration-300 group-hover:scale-110"
                   style={{ color: role.color }}
                 >
                   <role.icon className="size-6" aria-hidden />
@@ -30,7 +30,7 @@ export function Roles() {
                 <h3 className="mt-5 text-lg font-semibold">{role.role}</h3>
                 <ul className="mt-3 space-y-2">
                   {role.points.map((point) => (
-                    <li key={point} className="flex gap-2.5 text-sm text-muted-foreground">
+                    <li key={point} className="text-muted-foreground flex gap-2.5 text-sm">
                       <span
                         className="mt-2 size-1.5 shrink-0 rounded-full"
                         style={{ background: role.color }}

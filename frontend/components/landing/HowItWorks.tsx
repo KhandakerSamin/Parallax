@@ -46,10 +46,11 @@ export function HowItWorks() {
           {/* Pinned visual (desktop) */}
           <div className="hidden lg:block">
             <div className="sticky top-32">
-              <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-lift">
+              <div className="border-border bg-card shadow-lift relative overflow-hidden rounded-3xl border p-8">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-muted-foreground">
-                    Step {String(active + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+                  <span className="text-muted-foreground font-mono text-xs">
+                    Step {String(active + 1).padStart(2, "0")} /{" "}
+                    {String(STEPS.length).padStart(2, "0")}
                   </span>
                   <span className="flex gap-1" aria-hidden>
                     {STEPS.map((s, i) => (
@@ -57,7 +58,7 @@ export function HowItWorks() {
                         key={s.title}
                         className={cn(
                           "h-1.5 rounded-full transition-all duration-500",
-                          i === active ? "w-6 bg-primary" : "w-1.5 bg-border",
+                          i === active ? "bg-primary w-6" : "bg-border w-1.5",
                         )}
                       />
                     ))}
@@ -73,7 +74,7 @@ export function HowItWorks() {
                     className="mt-8"
                     aria-live="polite"
                   >
-                    <span className="grid size-14 place-items-center rounded-2xl bg-semantic-soft text-brand">
+                    <span className="bg-semantic-soft text-brand grid size-14 place-items-center rounded-2xl">
                       <current.icon className="size-7" aria-hidden />
                     </span>
                     <h3 className="text-h3 mt-6">{current.title}</h3>
@@ -88,9 +89,12 @@ export function HowItWorks() {
 
           {/* Steps with scroll-linked progress line */}
           <div className="relative">
-            <div aria-hidden className="absolute top-2 bottom-2 left-[19px] w-0.5 rounded-full bg-border">
+            <div
+              aria-hidden
+              className="bg-border absolute top-2 bottom-2 left-[19px] w-0.5 rounded-full"
+            >
               <motion.div
-                className="size-full origin-top rounded-full bg-gradient-to-b from-primary to-[var(--concept)]"
+                className="from-primary size-full origin-top rounded-full bg-gradient-to-b to-[var(--concept)]"
                 style={{ scaleY: progress }}
               />
             </div>
@@ -109,7 +113,7 @@ export function HowItWorks() {
                   >
                     <span
                       className={cn(
-                        "relative z-10 grid size-10 shrink-0 place-items-center rounded-full border-2 bg-background text-sm font-semibold transition-colors duration-300",
+                        "bg-background relative z-10 grid size-10 shrink-0 place-items-center rounded-full border-2 text-sm font-semibold transition-colors duration-300",
                         isActive && "border-primary text-brand",
                         done && "border-primary bg-primary text-primary-foreground",
                         !isActive && !done && "border-border text-muted-foreground",
@@ -124,18 +128,21 @@ export function HowItWorks() {
                           isActive ? "text-foreground" : "lg:text-muted-foreground",
                         )}
                       >
-                        <step.icon className="size-5 text-brand lg:hidden" aria-hidden />
+                        <step.icon className="text-brand size-5 lg:hidden" aria-hidden />
                         {step.title}
                       </h3>
-                      <p className="mt-2 max-w-[52ch] text-muted-foreground">{step.summary}</p>
+                      <p className="text-muted-foreground mt-2 max-w-[52ch]">{step.summary}</p>
                       <ul className="mt-3 flex flex-wrap gap-2">
                         {step.details.map((d) => (
-                          <li key={d} className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+                          <li
+                            key={d}
+                            className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs"
+                          >
                             {d}
                           </li>
                         ))}
                       </ul>
-                      <div className="mt-5 rounded-2xl border border-border bg-card p-5 lg:hidden">
+                      <div className="border-border bg-card mt-5 rounded-2xl border p-5 lg:hidden">
                         <StepVisual index={i} />
                       </div>
                     </div>

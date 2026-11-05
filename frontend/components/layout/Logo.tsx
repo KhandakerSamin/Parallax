@@ -18,7 +18,10 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link
       href="/"
-      className={cn("inline-flex items-center gap-2.5 rounded-lg font-semibold tracking-tight", className)}
+      className={cn(
+        "inline-flex items-center gap-2.5 rounded-lg font-semibold tracking-tight",
+        className,
+      )}
       aria-label="Parallax home"
     >
       <LogoMark />

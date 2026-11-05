@@ -9,7 +9,7 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof Checkbox
   return (
     <CheckboxPrimitive.Root
       className={cn(
-        "peer grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border border-input bg-card transition-colors data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground aria-invalid:border-danger",
+        "peer border-input bg-card data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground aria-invalid:border-danger grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border transition-colors",
         className,
       )}
       {...props}

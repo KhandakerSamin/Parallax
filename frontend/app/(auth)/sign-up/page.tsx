@@ -11,13 +11,15 @@ export default function SignUpPage() {
   return (
     <>
       <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
-      <p className="mt-2 text-muted-foreground">Use your Daffodil International University email.</p>
+      <p className="text-muted-foreground mt-2">
+        Use your Daffodil International University email.
+      </p>
       <div className="mt-8">
         <SignUpForm />
       </div>
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-8 text-center text-sm">
         Already have an account?{" "}
-        <Link href="/sign-in" className="font-medium text-brand hover:underline">
+        <Link href="/sign-in" className="text-brand font-medium hover:underline">
           Sign in
         </Link>
       </p>

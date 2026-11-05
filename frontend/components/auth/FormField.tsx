@@ -25,7 +25,7 @@ export function FormField({ id, label, error, hint, aside, children }: FormField
       </div>
       {children}
       {hint && !error && (
-        <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+        <p id={`${id}-hint`} className="text-muted-foreground text-xs">
           {hint}
         </p>
       )}
@@ -39,7 +39,7 @@ export function FormField({ id, label, error, hint, aside, children }: FormField
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
-            className="flex items-center gap-1.5 text-xs font-medium text-danger"
+            className="text-danger flex items-center gap-1.5 text-xs font-medium"
           >
             <AlertCircle className="size-3.5 shrink-0" aria-hidden />
             {error}
