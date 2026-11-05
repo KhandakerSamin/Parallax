@@ -327,7 +327,7 @@ export const EXPLAIN = {
         { text: " দেখা যায়।", lang: "bn" },
       ],
     },
-  ] satisfies EvidenceTab[],
+  ] as readonly EvidenceTab[],
   why: {
     title: "Why are these similar?",
     groups: [

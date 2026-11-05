@@ -4,8 +4,8 @@ import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { SkipLink } from "@/components/layout/SkipLink";
 import ArchitectureSection from "@/components/ArchitectureSection";
 import Footer from "@/components/Footer";
-import InteractiveAnalyzer from "@/components/InteractiveAnalyzer";
 import { CorpusStats } from "@/components/landing/CorpusStats";
+import { Explainability } from "@/components/landing/Explainability";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Perspectives } from "@/components/landing/Perspectives";
@@ -23,8 +23,8 @@ export default function Home() {
         <CorpusStats />
         <Problem />
         <HowItWorks />
-        <InteractiveAnalyzer />
         <Perspectives />
+        <Explainability />
         <ArchitectureSection />
       </main>
       <Footer />
