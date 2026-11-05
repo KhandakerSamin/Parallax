@@ -183,8 +183,8 @@
    Utilities
 --------------------------------------------------------------------------- */
 @utility text-display {
-  font-size: clamp(2.6rem, 1.4rem + 5vw, 5.25rem);
-  line-height: 1.02;
+  font-size: clamp(2.25rem, 1.3rem + 3.9vw, 4.25rem);
+  line-height: 1.05;
   letter-spacing: -0.04em;
   font-weight: 650;
 }
