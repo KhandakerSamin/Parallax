@@ -1,13 +1,12 @@
 /** Client-safe auth settings, read from NEXT_PUBLIC_* env vars (see .env.example). */
 
-export const USE_MOCK_AUTH = (process.env.NEXT_PUBLIC_USE_MOCK_AUTH ?? "true") !== "false";
+/** Mock auth is opt-in (NEXT_PUBLIC_USE_MOCK_AUTH=true) for demos without the backend. */
+export const USE_MOCK_AUTH = process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(
-  /\/$/,
-  "",
-);
+/** Backend base path. Same-origin by default; next.config.ts proxies it to FastAPI. */
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/v1").replace(/\/$/, "");
 
-/** Base URL for auth calls: the built-in mock route handlers, or the Express API. */
+/** Base URL for auth calls: the FastAPI backend, or the built-in mock route handlers. */
 export const AUTH_BASE = USE_MOCK_AUTH ? "/api/mock-auth" : `${API_URL}/auth`;
 
 export const ALLOWED_EMAIL_DOMAINS = (
