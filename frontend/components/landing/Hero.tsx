@@ -29,7 +29,7 @@ export function Hero() {
             </p>
           </div>
 
-          <h1 id="hero-title" className="text-display hero-rise mt-6 text-balance" style={rise(80).style}>
+          <h1 id="hero-title" className="text-display hero-rise-lcp mt-6 text-balance">
             {HERO.titleStart}
             <span className="text-gradient">{HERO.titleEmphasis}</span>
           </h1>

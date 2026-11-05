@@ -11,12 +11,20 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+// Mono and Bangla appear below the fold: load them without preloading so they don't
+// compete with the headline font for early bandwidth (better LCP on mobile).
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+  preload: false,
+});
 const hindSiliguri = Hind_Siliguri({
-  subsets: ["bengali", "latin"],
-  weight: ["400", "500", "600"],
+  subsets: ["bengali"],
+  weight: ["400", "600"],
   variable: "--font-hind-siliguri",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

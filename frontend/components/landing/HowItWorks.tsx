@@ -117,13 +117,13 @@ export function HowItWorks() {
                     >
                       {done ? <Check className="size-4" strokeWidth={3} aria-hidden /> : i + 1}
                     </span>
-                    <div
-                      className={cn(
-                        "min-w-0 flex-1 pb-2 transition-opacity duration-500 lg:pb-0",
-                        isActive ? "opacity-100" : "lg:opacity-45",
-                      )}
-                    >
-                      <h3 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
+                    <div className="min-w-0 flex-1 pb-2 lg:pb-0">
+                      <h3
+                        className={cn(
+                          "flex items-center gap-2.5 text-xl font-semibold tracking-tight transition-colors duration-500",
+                          isActive ? "text-foreground" : "lg:text-muted-foreground",
+                        )}
+                      >
                         <step.icon className="size-5 text-brand lg:hidden" aria-hidden />
                         {step.title}
                       </h3>

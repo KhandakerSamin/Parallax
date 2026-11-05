@@ -78,12 +78,12 @@ export function DashboardView() {
         </div>
         <dl className="relative mt-8 grid gap-4 border-t border-border pt-6 sm:grid-cols-3">
           {details.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-start gap-3">
-              <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">{label}</dt>
-                <dd className="truncate text-sm font-medium">{value}</dd>
-              </div>
+            <div key={label} className="min-w-0">
+              <dt className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Icon className="size-4 shrink-0" aria-hidden />
+                {label}
+              </dt>
+              <dd className="mt-1 truncate pl-6 text-sm font-medium">{value}</dd>
             </div>
           ))}
         </dl>
