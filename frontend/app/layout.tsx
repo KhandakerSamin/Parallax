@@ -1,17 +1,40 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import type { ReactNode } from "react";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+const hindSiliguri = Hind_Siliguri({
+  subsets: ["bengali", "latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-hind-siliguri",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Parallax — Multi-Perspective Academic Reuse Detection",
-  description: "A Multi-Perspective Semantic and Structural Similarity Detection System for Bangla-English Academic Reuse. DIU Software Engineering Capstone Project.",
+  title: "Parallax — See your work from every angle",
+  description:
+    "Parallax compares academic documents lexically, semantically, conceptually, and structurally across Bangla, English, and mixed text, and shows reviewers the evidence.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f1a" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full scroll-smooth antialiased">
-      <body className="min-h-full flex flex-col bg-[#090d16] text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
-        {children}
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geist.variable} ${geistMono.variable} ${hindSiliguri.variable} antialiased`}
+    >
+      <body className="min-h-dvh">
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
