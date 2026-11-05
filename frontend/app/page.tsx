@@ -5,7 +5,7 @@ import { SkipLink } from "@/components/layout/SkipLink";
 import ArchitectureSection from "@/components/ArchitectureSection";
 import CorpusSection from "@/components/CorpusSection";
 import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
+import { Hero } from "@/components/landing/Hero";
 import InteractiveAnalyzer from "@/components/InteractiveAnalyzer";
 import PerspectiveCards from "@/components/PerspectiveCards";
 
