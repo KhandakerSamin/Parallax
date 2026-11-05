@@ -1,18 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Menu } from "lucide-react";
+import { ArrowUpRight, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { NAV_LINKS } from "@/lib/constants/content";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "./Logo";
@@ -23,71 +23,97 @@ type MobileNavProps = {
   signedIn: boolean;
 };
 
-/** Hamburger menu for small screens. Radix locks body scroll while it is open. */
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Hamburger menu for small screens: a centered modal with staggered links. */
 export function MobileNav({ active, hrefFor, signedIn }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
           <Menu className="size-5" aria-hidden />
         </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <div className="flex items-center gap-2.5">
-          <LogoMark />
-          <SheetTitle className="text-lg font-semibold">Parallax</SheetTitle>
-        </div>
-        <SheetDescription className="sr-only">Site navigation</SheetDescription>
+      </DialogTrigger>
+      <DialogContent closeLabel="Close menu" className="overflow-hidden p-0">
+        {/* Soft brand glow behind the header */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 left-1/2 h-48 w-[120%] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--brand)_22%,transparent),transparent)]"
+        />
 
-        <nav aria-label="Mobile" className="mt-10">
+        <div className="relative flex items-center gap-2.5 px-6 pt-6">
+          <LogoMark />
+          <DialogTitle className="text-lg font-semibold">Parallax</DialogTitle>
+        </div>
+        <DialogDescription className="text-muted-foreground relative px-6 pt-1 text-sm">
+          Jump to a section
+        </DialogDescription>
+
+        <nav aria-label="Mobile" className="relative mt-5 px-3">
           <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link, i) => (
-              <motion.li
-                key={link.id}
-                initial={{ opacity: 0, x: 24 }}
-                animate={open ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.08 + i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <SheetClose asChild>
-                  <a
-                    href={hrefFor(link.id)}
-                    aria-current={active === link.id ? "true" : undefined}
-                    className={cn(
-                      "hover:bg-muted block rounded-xl px-3 py-3 text-lg font-medium transition-colors",
-                      active === link.id ? "text-brand" : "text-foreground",
-                    )}
-                  >
-                    {link.label}
-                  </a>
-                </SheetClose>
-              </motion.li>
-            ))}
+            {NAV_LINKS.map((link, i) => {
+              const isActive = active === link.id;
+              return (
+                <motion.li
+                  key={link.id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.06 + i * 0.05, duration: 0.4, ease: EASE }}
+                >
+                  <DialogClose asChild>
+                    <a
+                      href={hrefFor(link.id)}
+                      aria-current={isActive ? "true" : undefined}
+                      className={cn(
+                        "group flex items-center gap-4 rounded-2xl px-3 py-3 transition-colors",
+                        isActive ? "bg-muted text-brand" : "text-foreground hover:bg-muted/70",
+                      )}
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "font-mono text-xs tabular-nums",
+                          isActive ? "text-brand" : "text-muted-foreground",
+                        )}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 text-lg font-medium">{link.label}</span>
+                      <ArrowUpRight
+                        aria-hidden
+                        className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
+                    </a>
+                  </DialogClose>
+                </motion.li>
+              );
+            })}
           </ul>
         </nav>
 
         <motion.div
-          className="mt-auto flex flex-col gap-3"
-          initial={{ opacity: 0, y: 12 }}
-          animate={open ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.4, duration: 0.35 }}
+          className="border-border bg-muted/40 relative mt-4 grid gap-3 border-t p-6 sm:grid-cols-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.32, duration: 0.4, ease: EASE }}
         >
           {signedIn ? (
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="sm:col-span-2">
               <Link href="/dashboard">Go to dashboard</Link>
             </Button>
           ) : (
             <>
-              <Button asChild size="lg">
-                <Link href="/sign-up">Get started</Link>
-              </Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/sign-in">Sign in</Link>
+              </Button>
+              <Button asChild size="lg">
+                <Link href="/sign-up">Get started</Link>
               </Button>
             </>
           )}
         </motion.div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

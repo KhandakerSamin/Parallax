@@ -15,14 +15,20 @@ cp .env.example .env.local   # optional: the defaults work for local development
 npm run dev                  # http://localhost:3000
 ```
 
-Mock auth is on by default, so you can sign in without a backend:
+Sign-in uses the FastAPI backend, so start it too (see [backend/README.md](../backend/README.md)):
+
+```bash
+cd backend && uvicorn app.main:app --reload --port 8000
+```
+
+No backend at hand (for example, an offline demo)? Set `NEXT_PUBLIC_USE_MOCK_AUTH=true` in `.env.local` to use the built-in mock instead. Both use the same demo accounts:
 
 | Account  | Email / ID                           | Password        |
 | -------- | ------------------------------------ | --------------- |
 | Student  | `student@diu.edu.bd` / `221-35-001`  | `Parallax#2026` |
 | Reviewer | `reviewer@diu.edu.bd` / `STAFF-0042` | `Parallax#2026` |
 
-Accounts you create on `/sign-up` live in memory and reset when the server restarts.
+On the real backend, accounts are stored in its database (PostgreSQL, or SQLite locally), and the demo accounts come from `python -m scripts.seed_demo_users`. In mock mode, accounts you create live in memory and reset when the server restarts.
 
 ### Scripts
 
@@ -40,8 +46,9 @@ Accounts you create on `/sign-up` live in memory and reset when the server resta
 | Variable                            | Default                             | Purpose                                                                      |
 | ----------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`              | `http://localhost:3000`             | Absolute URL for metadata, Open Graph and the sitemap. Set it in production. |
-| `NEXT_PUBLIC_USE_MOCK_AUTH`         | `true`                              | `true` uses the built-in mock. `false` calls the real API.                   |
-| `NEXT_PUBLIC_API_URL`               | `http://localhost:4000`             | Base URL of the Express auth API (used when mock auth is off).               |
+| `NEXT_PUBLIC_USE_MOCK_AUTH`         | `false`                             | `true` uses the built-in mock instead of the backend.                        |
+| `NEXT_PUBLIC_API_URL`               | `/api/v1`                           | Backend base path as the browser sees it. Keep it same-origin.               |
+| `BACKEND_URL`                       | `http://localhost:8000`             | Where Next.js forwards `/api/v1/*` (server-side only).                       |
 | `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS` | `diu.edu.bd,daffodilvarsity.edu.bd` | Comma-separated domains allowed at sign-up. Subdomains are accepted too.     |
 | `NEXT_PUBLIC_IDLE_TIMEOUT_MINUTES`  | `30`                                | Automatic sign-out after inactivity, with a warning one minute before.       |
 | `AUTH_COOKIE_NAME`                  | `parallax_session`                  | Session cookie that `proxy.ts` checks to guard `/dashboard`.                 |
@@ -75,11 +82,13 @@ All landing copy lives in `lib/constants/content.ts`. Sample and target numbers 
 
 ## Auth: mock vs real
 
-The UI always talks to `lib/auth/api.ts`. That client sends requests either to the mock handlers at `/api/mock-auth/*` or to `${NEXT_PUBLIC_API_URL}/auth/*`, with identical request and response shapes. The session is an **httpOnly cookie**. Nothing auth-related is stored in `localStorage`, and the client sends `credentials: "include"` on every call.
+The UI always talks to `lib/auth/api.ts`. That client sends requests to `/api/v1/auth/*`, which `next.config.ts` rewrites to the FastAPI backend, or, in mock mode, to the handlers at `/api/mock-auth/*`. Both use identical request and response shapes. Because the browser only ever calls its own origin, the backend's session cookie belongs to the frontend's domain. The session is an **httpOnly cookie**. Nothing auth-related is stored in `localStorage`, and the client sends `credentials: "include"` on every call.
 
 `proxy.ts` is an _optimistic_ guard. It only checks that the session cookie exists before letting someone into `/dashboard`, and it redirects signed-in users away from `/sign-in` and `/sign-up`. The real check happens in the API, on `GET /auth/me`.
 
-### Expected Express endpoints
+### Backend endpoints
+
+Implemented in `backend/` (FastAPI). Paths are relative to `/api/v1`.
 
 All bodies are JSON. Errors return `{ "message": string }` with a suitable status code.
 
@@ -121,12 +130,12 @@ type User = {
 
 The server must also enforce what the UI enforces: the allowed email domains, the password rules (8+ characters with upper, lower, number and symbol), self-registration only as student or reviewer, and hashed passwords (never stored or logged in plain text).
 
-### Switching to the real backend
+### Deploying
 
-1. Set `NEXT_PUBLIC_USE_MOCK_AUTH=false` and `NEXT_PUBLIC_API_URL`.
-2. Enable CORS with `credentials: true` for the frontend origin on the Express API.
-3. `proxy.ts` can only see cookies on the frontend's own domain. Either serve the API on the same site (for example, rewrite `/api/auth/*` to Express from `next.config.ts`), or set the cookie on a shared parent domain using the same `AUTH_COOKIE_NAME`.
-4. Implement `GET /auth/google` if you keep the "Continue with Google" button. Today it only shows a toast.
+1. Set `BACKEND_URL` to the backend's address and keep `NEXT_PUBLIC_API_URL=/api/v1`.
+2. Use the same `AUTH_COOKIE_NAME` on both sides.
+3. Run the backend with `APP_ENV=production`, so its cookies are `Secure`.
+4. "Continue with Google" only shows a toast today. To make it work, add `GET /auth/google` to the backend.
 
 ## Quality checks
 
