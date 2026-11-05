@@ -88,20 +88,12 @@ export function HeroReport() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <a
-              href="#evidence"
-              tabIndex={-1}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-medium text-primary-foreground"
-            >
+            <span className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-medium text-primary-foreground">
               View comparison <ArrowUpRight className="size-3.5" aria-hidden />
-            </a>
-            <a
-              href="#evidence"
-              tabIndex={-1}
-              className="inline-flex h-9 items-center justify-center rounded-full border border-border text-xs font-medium"
-            >
+            </span>
+            <span className="inline-flex h-9 items-center justify-center rounded-full border border-border text-xs font-medium">
               View evidence
-            </a>
+            </span>
           </div>
         </div>
       </TiltPlane>

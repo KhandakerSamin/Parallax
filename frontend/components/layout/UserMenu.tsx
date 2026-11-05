@@ -24,9 +24,10 @@ export function UserMenu({ user }: { user: User }) {
       <DropdownMenu>
         <DropdownMenuTrigger
           className="cursor-pointer rounded-full ring-offset-2 ring-offset-background transition-shadow hover:ring-2 hover:ring-border"
-          aria-label={`Account menu for ${user.name}`}
+          data-testid="user-menu"
         >
-          <Avatar>
+          <span className="sr-only">Account menu for {user.name}</span>
+          <Avatar aria-hidden>
             <AvatarFallback>{initials(user.name)}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>

@@ -44,11 +44,11 @@ export async function signOut(): Promise<void> {
   await request<void>("/logout", { method: "POST" });
 }
 
-/** The signed-in user, or null when there is no valid session. */
+/** The signed-in user, or null when there is no valid session (200 {user:null} or 401). */
 export async function getMe(): Promise<User | null> {
   try {
-    const { user } = await request<{ user: User }>("/me", { method: "GET" });
-    return user;
+    const { user } = await request<{ user: User | null }>("/me", { method: "GET" });
+    return user ?? null;
   } catch (error) {
     if (error instanceof AuthError && error.status === 401) return null;
     throw error;

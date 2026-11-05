@@ -281,6 +281,20 @@
   animation-delay: var(--delay, 0ms);
 }
 
+/* The headline is the LCP element: move it in without hiding it, so it counts at first paint. */
+@keyframes hero-rise-visible {
+  from {
+    transform: translateY(18px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.hero-rise-lcp {
+  animation: hero-rise-visible 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @keyframes shimmer {
   to {
     transform: translateX(100%);
@@ -340,7 +354,8 @@
     transition: none;
   }
 
-  .hero-rise {
+  .hero-rise,
+  .hero-rise-lcp {
     animation: none;
   }
 

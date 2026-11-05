@@ -78,12 +78,14 @@ export function ConceptVisual() {
       {fields.map(([k, v, match]) => (
         <div key={k} className="flex items-center gap-2 rounded-lg bg-muted px-2.5 py-1.5">
           <dt className="w-16 shrink-0 text-muted-foreground">{k}</dt>
-          <dd className="flex-1 truncate">{v}</dd>
-          {match ? (
-            <Check className="size-3.5 text-concept" strokeWidth={3} aria-label="match" />
-          ) : (
-            <Minus className="size-3.5 text-muted-foreground" aria-label="different" />
-          )}
+          <dd className="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <span className="truncate">{v}</span>
+            {match ? (
+              <Check className="size-3.5 shrink-0 text-concept" strokeWidth={3} aria-label="match" />
+            ) : (
+              <Minus className="size-3.5 shrink-0 text-muted-foreground" aria-label="different" />
+            )}
+          </dd>
         </div>
       ))}
     </dl>
