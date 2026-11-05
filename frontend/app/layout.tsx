@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import type { ReactNode } from "react";
+import { MotionProvider } from "@/components/providers/MotionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
@@ -34,7 +36,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geist.variable} ${geistMono.variable} ${hindSiliguri.variable} antialiased`}
     >
       <body className="min-h-dvh">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
