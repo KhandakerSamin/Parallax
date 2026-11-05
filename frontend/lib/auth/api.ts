@@ -2,8 +2,8 @@ import { AUTH_BASE } from "./config";
 import { AuthError, type SignInInput, type SignUpInput, type User } from "./types";
 
 /**
- * Auth API client. Talks to the mock route handlers (/api/mock-auth/*) or to the
- * Express API (`${NEXT_PUBLIC_API_URL}/auth/*`) with the same request/response shapes.
+ * Auth API client. Talks to the FastAPI backend (`${NEXT_PUBLIC_API_URL}/auth/*`) or to the
+ * mock route handlers (/api/mock-auth/*), which share the same request/response shapes.
  * The session lives in an httpOnly cookie, so every call sends credentials.
  */
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -20,6 +20,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (res.status === 204) return undefined as T;
   const body: unknown = await res.json().catch(() => null);
+  // A 5xx without our JSON body means the backend is down or the proxy could not reach it.
+  if (res.status >= 500 && !(body && typeof body === "object" && "message" in body)) {
+    throw new AuthError("Can't reach the server right now. Please try again shortly.", res.status);
+  }
   if (!res.ok) {
     const message =
       body && typeof body === "object" && "message" in body && typeof body.message === "string"

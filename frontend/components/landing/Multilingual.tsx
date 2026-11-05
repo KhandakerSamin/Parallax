@@ -9,9 +9,8 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 // Final positions (% of the plot) and where each card drifts in from (px).
 const LAYOUT = {
-  en: { left: "4%", top: "8%", from: { x: -40, y: -50 } },
-  bn: { left: "34%", top: "33%", from: { x: 70, y: -30 } },
-  banglish: { left: "6%", top: "52%", from: { x: -50, y: 60 } },
+  en: { left: "5%", top: "12%", from: { x: -40, y: -50 } },
+  bn: { left: "30%", top: "42%", from: { x: 70, y: 40 } },
 } as const;
 
 export function Multilingual() {
@@ -38,11 +37,11 @@ export function Multilingual() {
 
         <Reveal delay={0.1}>
           <figure className="border-border bg-card shadow-lift rounded-3xl border p-4 sm:p-6">
-            <div className="bg-grid bg-muted/50 relative h-[27rem] overflow-hidden rounded-2xl sm:h-[25rem]">
-              {/* Neighbourhood where the three phrasings land */}
+            <div className="bg-grid bg-muted/50 relative h-[24rem] overflow-hidden rounded-2xl sm:h-[23rem]">
+              {/* Neighbourhood where both phrasings land */}
               <motion.div
                 aria-hidden
-                className="bg-semantic-soft/60 absolute top-[4%] left-[1%] h-[80%] w-[82%] rounded-[45%] border-2 border-dashed border-[color-mix(in_oklab,var(--semantic)_45%,transparent)]"
+                className="bg-semantic-soft/60 absolute top-[5%] left-[1%] h-[72%] w-[84%] rounded-[45%] border-2 border-dashed border-[color-mix(in_oklab,var(--semantic)_45%,transparent)]"
                 initial={{ opacity: 0, scale: 0.85 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-20% 0px" }}

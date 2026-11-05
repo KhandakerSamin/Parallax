@@ -1,0 +1,1 @@
+Migrations for the Parallax backend. Run `alembic upgrade head` from backend/.

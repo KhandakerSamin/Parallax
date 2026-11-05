@@ -52,7 +52,15 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/parallax_test
+          TEST_DATABASE_URL: postgresql://test:test@localhost:5432/parallax_test
         run: pytest -v
+
+      - name: Check migrations match the models
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/parallax_test
+        run: |
+          alembic upgrade head
+          alembic check
 
   # ── Lint & Test — AI Service ──────────────────────────
   ai-service:
