@@ -135,7 +135,7 @@ The server must also enforce what the UI enforces: the allowed email domains, th
 1. Set `BACKEND_URL` to the backend's address and keep `NEXT_PUBLIC_API_URL=/api/v1`.
 2. Use the same `AUTH_COOKIE_NAME` on both sides.
 3. Run the backend with `APP_ENV=production`, so its cookies are `Secure`.
-4. "Continue with Google" only shows a toast today. To make it work, add `GET /auth/google` to the backend.
+4. For "Continue with Google", set the backend's `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `PUBLIC_URL` (see [backend/README.md](../backend/README.md#google-sign-in)). Until those are set, the button returns to sign-in with a "not set up yet" message. First-time Google users finish signing up at `/sign-up/google`.
 
 ## Quality checks
 

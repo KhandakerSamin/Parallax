@@ -45,18 +45,22 @@ To use a hosted PostgreSQL database (Neon, Supabase, Render…), set `DATABASE_U
 
 All settings are environment variables. They can also go in `backend/.env`.
 
-| Variable                | Default                             | Purpose                                                        |
-| ----------------------- | ----------------------------------- | -------------------------------------------------------------- |
-| `DATABASE_URL`          | `sqlite:///./parallax.db`           | SQLAlchemy URL                                                 |
-| `APP_ENV`               | `development`                       | `production` turns on Secure cookies and blocks the demo seed  |
-| `ALLOWED_ORIGINS`       | `http://localhost:3000`             | CORS origins, comma-separated (only for direct browser calls)  |
-| `ALLOWED_EMAIL_DOMAINS` | `diu.edu.bd,daffodilvarsity.edu.bd` | Domains allowed at sign-up; subdomains count                   |
-| `AUTH_COOKIE_NAME`      | `parallax_session`                  | Must match the frontend's `AUTH_COOKIE_NAME`                   |
-| `COOKIE_SECURE`         | on unless `development`             | Force the cookie's Secure flag                                 |
-| `SESSION_TTL_HOURS`     | `12`                                | Session length without "remember me"                           |
-| `REMEMBER_ME_DAYS`      | `30`                                | Session length with "remember me"                              |
-| `LOGIN_MAX_ATTEMPTS`    | `5`                                 | Failed sign-ins allowed per identifier…                        |
-| `LOGIN_WINDOW_MINUTES`  | `15`                                | …within this window, before it is locked for the rest of it    |
+| Variable                | Default                             | Purpose                                                          |
+| ----------------------- | ----------------------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`          | `sqlite:///./parallax.db`           | SQLAlchemy URL                                                   |
+| `APP_ENV`               | `development`                       | `production` turns on Secure cookies and blocks the demo seed    |
+| `ALLOWED_ORIGINS`       | `http://localhost:3000`             | CORS origins, comma-separated (only for direct browser calls)    |
+| `PUBLIC_URL`            | `http://localhost:3000`             | The frontend's public URL; Google redirects back through it      |
+| `SECRET_KEY`            | dev-only value                      | Signs OAuth state; **required** when `APP_ENV=production`        |
+| `GOOGLE_CLIENT_ID`      | _(empty)_                           | Google OAuth client ID; Google sign-in is off until both are set |
+| `GOOGLE_CLIENT_SECRET`  | _(empty)_                           | Google OAuth client secret                                       |
+| `ALLOWED_EMAIL_DOMAINS` | `diu.edu.bd,daffodilvarsity.edu.bd` | Domains allowed at sign-up; subdomains count                     |
+| `AUTH_COOKIE_NAME`      | `parallax_session`                  | Must match the frontend's `AUTH_COOKIE_NAME`                     |
+| `COOKIE_SECURE`         | on unless `development`             | Force the cookie's Secure flag                                   |
+| `SESSION_TTL_HOURS`     | `12`                                | Session length without "remember me"                             |
+| `REMEMBER_ME_DAYS`      | `30`                                | Session length with "remember me"                                |
+| `LOGIN_MAX_ATTEMPTS`    | `5`                                 | Failed sign-ins allowed per identifier…                          |
+| `LOGIN_WINDOW_MINUTES`  | `15`                                | …within this window, before it is locked for the rest of it      |
 
 ## How auth works
 
@@ -64,22 +68,47 @@ All settings are environment variables. They can also go in `backend/.env`.
 - **Sessions are stored on the server.** Sign-in creates a row in `auth_sessions` and sends a random 256-bit token in an `HttpOnly; SameSite=Lax` cookie. Only the token's SHA-256 hash is stored, so a database leak doesn't expose live sessions. Signing out deletes the row, so the old cookie stops working at once.
 - **Same-origin setup.** The browser only talks to the Next.js site. `next.config.ts` rewrites `/api/v1/*` to `BACKEND_URL`, so the cookie belongs to the frontend's domain and `proxy.ts` can guard `/dashboard`.
 - **Sign-in protection.**
-  - An unknown account and a wrong password get the same 401 response and take the same time.
-  - After 5 failures, the identifier is locked for 15 minutes (429 with `Retry-After`).
-  - The limiter runs in memory; move it to Redis if you run more than one API instance.
+    - An unknown account and a wrong password get the same 401 response and take the same time.
+    - After 5 failures, the identifier is locked for 15 minutes (429 with `Retry-After`).
+    - The limiter runs in memory; move it to Redis if you run more than one API instance.
 - **Server-side validation** matches the sign-up form: university email domains, 4–20 character IDs, the password rules, self-registration only as student or reviewer, and a known department. Email and ID must each be unique (FR02).
+
+### Google sign-in
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), set up the **OAuth consent screen**:
+    - user type **External**, or **Internal** if your Google Workspace is DIU's
+    - scopes `openid`, `email` and `profile`
+2. Go to **Credentials → Create credentials → OAuth client ID → Web application**.
+3. Under **Authorized redirect URIs**, add `http://localhost:3000/api/v1/auth/google/callback`. For production, add `<PUBLIC_URL>/api/v1/auth/google/callback` too.
+4. Put the client ID and secret in `backend/.env`, then restart the API:
+    ```
+    GOOGLE_CLIENT_ID=…apps.googleusercontent.com
+    GOOGLE_CLIENT_SECRET=…
+    ```
+
+How the flow works:
+
+- Only verified Google accounts on an allowed DIU domain get in.
+- **Existing account:** an existing account with the same email is linked and signed in.
+- **New person:** they go to `/sign-up/google` to add their ID, role and department.
+- **Security:**
+    - The flow uses PKCE and a signed state cookie that expires after 10 minutes.
+    - Google-only accounts have no password, so password sign-in fails for them.
 
 ### Endpoints
 
 All bodies are JSON in camelCase. Errors are returned as `{ "message": string, "field"?: string }`.
 
-| Method | Path                     | Result                                                                                       |
-| ------ | ------------------------ | -------------------------------------------------------------------------------------------- |
-| POST   | `/api/v1/auth/register`  | `201 { user }` and signs in · `400` invalid input · `409` email or ID taken (`field`)        |
-| POST   | `/api/v1/auth/login`     | `200 { user }` · `401` wrong credentials · `429` too many attempts                           |
-| POST   | `/api/v1/auth/logout`    | `204`, revokes the session and clears the cookie                                             |
-| GET    | `/api/v1/auth/me`        | `200 { user }`, or `200 { user: null }` when signed out                                      |
-| GET    | `/api/v1/health`         | `200 { status: "ok" }`                                                                       |
+| Method | Path                           | Result                                                                                |
+| ------ | ------------------------------ | ------------------------------------------------------------------------------------- |
+| POST   | `/api/v1/auth/register`        | `201 { user }` and signs in · `400` invalid input · `409` email or ID taken (`field`) |
+| POST   | `/api/v1/auth/login`           | `200 { user }` · `401` wrong credentials · `429` too many attempts                    |
+| POST   | `/api/v1/auth/logout`          | `204`, revokes the session and clears the cookie                                      |
+| GET    | `/api/v1/auth/me`              | `200 { user }`, or `200 { user: null }` when signed out                               |
+| GET    | `/api/v1/auth/google`          | `302` to Google (`?next=/path`); `/callback` signs in or goes to `/sign-up/google`    |
+| GET    | `/api/v1/auth/google/pending`  | `200 { email, name }` of the Google sign-up waiting to finish · `401` if it expired   |
+| POST   | `/api/v1/auth/google/complete` | `201 { user }` from `{ universityId, role, department }` · `409` ID taken             |
+| GET    | `/api/v1/health`               | `200 { status: "ok" }`                                                                |
 
 To protect a new route, declare the signed-in user as a parameter:
 
@@ -95,12 +124,13 @@ def list_reports(user: CurrentUser): ...  # 401 when not signed in
 ```
 app/
   main.py               app factory, CORS, error handlers
-  core/                 settings, Argon2 + tokens, cookies, errors, rate limiter
+  core/                 settings, Argon2 + tokens, signed tokens, cookies, errors, rate limiter
   db/                   engine, session dependency, Base + UTCDateTime
   models/               User, AuthSession
   schemas/              request/response models and validation rules
-  services/auth.py      register, authenticate, issue/resolve/revoke sessions
-  api/                  deps (CurrentUser) and routes (auth, health)
+  services/auth.py      register, authenticate, Google linking, sessions
+  services/google.py    Google OAuth: authorization URL, code exchange, ID token checks
+  api/                  deps (CurrentUser) and routes (auth, google, health)
 migrations/             Alembic (alembic upgrade head)
 scripts/                seed_demo_users, create_user
 tests/                  pytest suite
