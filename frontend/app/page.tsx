@@ -1,37 +1,30 @@
-import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import InteractiveAnalyzer from "../components/InteractiveAnalyzer";
-import PerspectiveCards from "../components/PerspectiveCards";
-import CorpusSection from "../components/CorpusSection";
-import ArchitectureSection from "../components/ArchitectureSection";
-import Footer from "../components/Footer";
+import { BackToTop } from "@/components/layout/BackToTop";
+import { Navbar } from "@/components/layout/Navbar";
+import { ScrollProgress } from "@/components/layout/ScrollProgress";
+import { SkipLink } from "@/components/layout/SkipLink";
+import ArchitectureSection from "@/components/ArchitectureSection";
+import CorpusSection from "@/components/CorpusSection";
+import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
+import InteractiveAnalyzer from "@/components/InteractiveAnalyzer";
+import PerspectiveCards from "@/components/PerspectiveCards";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Navigation Header */}
+    <>
+      <div id="top" />
+      <SkipLink />
+      <ScrollProgress />
       <Navbar />
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col">
-        {/* Hero Section */}
+      <main id="main" className="flex flex-col">
         <Hero />
-
-        {/* Interactive Live Analyzer Sandbox */}
         <InteractiveAnalyzer />
-
-        {/* 4 Analytical Perspectives Breakdown */}
         <PerspectiveCards />
-
-        {/* DIU DSpace Corpus & Ingestion Pipeline */}
         <CorpusSection />
-
-        {/* 3-Tier Microservice Architecture & RBAC */}
         <ArchitectureSection />
       </main>
-
-      {/* Footer */}
       <Footer />
-    </div>
+      <BackToTop />
+    </>
   );
 }
