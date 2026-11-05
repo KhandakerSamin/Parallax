@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { MotionProvider } from "@/components/providers/MotionProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { IdleLogout } from "@/hooks/useIdleLogout";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <AuthProvider>
               {children}
               <Toaster />
+              <IdleLogout />
             </AuthProvider>
           </MotionProvider>
         </ThemeProvider>
