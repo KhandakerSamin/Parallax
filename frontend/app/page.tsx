@@ -1,11 +1,12 @@
 import { BackToTop } from "@/components/layout/BackToTop";
+import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { SkipLink } from "@/components/layout/SkipLink";
-import ArchitectureSection from "@/components/ArchitectureSection";
-import Footer from "@/components/Footer";
 import { CorpusStats } from "@/components/landing/CorpusStats";
 import { Explainability } from "@/components/landing/Explainability";
+import { Faq } from "@/components/landing/Faq";
+import { FinalCta } from "@/components/landing/FinalCta";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Multilingual } from "@/components/landing/Multilingual";
@@ -33,7 +34,8 @@ export default function Home() {
         <Roles />
         <Research />
         <Responsible />
-        <ArchitectureSection />
+        <Faq />
+        <FinalCta />
       </main>
       <Footer />
       <BackToTop />

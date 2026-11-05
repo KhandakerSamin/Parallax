@@ -326,25 +326,6 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Legacy helpers for the original components (removed once replaced)
---------------------------------------------------------------------------- */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-panel-hover:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ---------------------------------------------------------------------------
    Overlay & disclosure animations (used by components/ui)
 --------------------------------------------------------------------------- */
 @keyframes fade-in {
