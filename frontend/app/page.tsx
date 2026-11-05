@@ -8,6 +8,7 @@ import InteractiveAnalyzer from "@/components/InteractiveAnalyzer";
 import PerspectiveCards from "@/components/PerspectiveCards";
 import { CorpusStats } from "@/components/landing/CorpusStats";
 import { Hero } from "@/components/landing/Hero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Problem } from "@/components/landing/Problem";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
         <Hero />
         <CorpusStats />
         <Problem />
+        <HowItWorks />
         <InteractiveAnalyzer />
         <PerspectiveCards />
         <ArchitectureSection />
