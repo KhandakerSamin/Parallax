@@ -31,7 +31,27 @@ export function Hero() {
 
           <h1 id="hero-title" className="text-display hero-rise-lcp mt-5 text-balance">
             {HERO.titleStart}
-            <span className="text-gradient">{HERO.titleEmphasis}</span>
+            <span className="text-gradient hero-emphasis">
+              {HERO.titleEmphasis}
+              <svg
+                aria-hidden
+                viewBox="0 0 200 12"
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute -bottom-[0.08em] left-0 h-[0.18em] w-full overflow-visible"
+              >
+                <path
+                  d="M2 8.5 C 50 2.5, 120 2.5, 198 7"
+                  pathLength={1}
+                  fill="none"
+                  stroke="var(--brand)"
+                  strokeOpacity={0.55}
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                  className="hero-underline"
+                />
+              </svg>
+            </span>
           </h1>
 
           <p
