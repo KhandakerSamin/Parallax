@@ -520,22 +520,6 @@
     transform: translateY(8px) scale(0.97);
   }
 }
-@keyframes sheet-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes sheet-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
 @keyframes accordion-down {
   from {
     height: 0;
