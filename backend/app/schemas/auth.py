@@ -35,7 +35,7 @@ def is_allowed_email(email: str, domains: list[str] | None = None) -> bool:
     return any(domain == d or domain.endswith(f".{d}") for d in allowed)
 
 
-def _check_password(password: str) -> str:
+def check_password_rules(password: str) -> str:
     missing = [label for test, label in PASSWORD_RULES if not test(password)]
     if missing:
         raise ValueError(f"Password needs {', '.join(missing)}.")
@@ -44,15 +44,15 @@ def _check_password(password: str) -> str:
     return password
 
 
-def _normalise_university_id(value: str) -> str:
+def normalise_university_id(value: str) -> str:
     value = value.strip()
     if not UNIVERSITY_ID_PATTERN.fullmatch(value):
         raise ValueError("Use 4–20 letters, numbers or dashes, e.g. 221-35-123.")
     return value.upper()
 
 
-Password = Annotated[str, AfterValidator(_check_password)]
-UniversityId = Annotated[str, AfterValidator(_normalise_university_id)]
+Password = Annotated[str, AfterValidator(check_password_rules)]
+UniversityId = Annotated[str, AfterValidator(normalise_university_id)]
 
 
 class CamelModel(BaseModel):
