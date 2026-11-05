@@ -119,7 +119,7 @@ export function HowItWorks() {
                     </span>
                     <div
                       className={cn(
-                        "pb-2 transition-opacity duration-500 lg:pb-0",
+                        "min-w-0 flex-1 pb-2 transition-opacity duration-500 lg:pb-0",
                         isActive ? "opacity-100" : "lg:opacity-45",
                       )}
                     >

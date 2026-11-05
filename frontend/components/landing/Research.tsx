@@ -33,7 +33,7 @@ export function Research() {
                 <StaggerItem as="li" key={model.name} className="flex items-center gap-4 py-3.5">
                   <span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{model.name}</p>
+                    <p className="font-medium [overflow-wrap:anywhere]">{model.name}</p>
                     <p className="text-sm text-muted-foreground">{model.note}</p>
                   </div>
                   <span className="hidden text-xs text-muted-foreground sm:block">Pending</span>
