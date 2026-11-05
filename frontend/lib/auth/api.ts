@@ -1,5 +1,12 @@
 import { AUTH_BASE } from "./config";
-import { AuthError, type SignInInput, type SignUpInput, type User } from "./types";
+import {
+  AuthError,
+  type GoogleCompleteInput,
+  type GooglePending,
+  type SignInInput,
+  type SignUpInput,
+  type User,
+} from "./types";
 
 /**
  * Auth API client. Talks to the FastAPI backend (`${NEXT_PUBLIC_API_URL}/auth/*`) or to the
@@ -63,4 +70,17 @@ export async function getMe(): Promise<User | null> {
     if (error instanceof AuthError && error.status === 401) return null;
     throw error;
   }
+}
+
+/** The verified Google name and email waiting to finish sign-up (401 once it expires). */
+export async function getGooglePending(): Promise<GooglePending> {
+  return request<GooglePending>("/google/pending", { method: "GET" });
+}
+
+export async function completeGoogleSignUp(input: GoogleCompleteInput): Promise<User> {
+  const { user } = await request<{ user: User }>("/google/complete", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return user;
 }

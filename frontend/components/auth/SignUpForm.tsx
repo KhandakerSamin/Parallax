@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, useAnimationControls } from "framer-motion";
-import { BookOpenCheck, GraduationCap, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -10,31 +10,14 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { ALLOWED_EMAIL_DOMAINS, DEPARTMENTS } from "@/lib/auth/config";
+import { ALLOWED_EMAIL_DOMAINS } from "@/lib/auth/config";
 import { AuthError } from "@/lib/auth/types";
 import { signUpSchema, type SignUpValues } from "@/lib/auth/validation";
-import { cn } from "@/lib/utils";
 import { fieldA11y, FormField } from "./FormField";
+import { GoogleButton, OrDivider } from "./GoogleButton";
 import { PasswordInput } from "./PasswordInput";
+import { DepartmentSelect, RoleField } from "./ProfileFields";
 import { PasswordStrength } from "./PasswordStrength";
-
-const ROLE_OPTIONS = [
-  {
-    value: "student",
-    label: "Student",
-    icon: GraduationCap,
-    desc: "Check work, explore prior projects",
-  },
-  {
-    value: "reviewer",
-    label: "Reviewer",
-    icon: BookOpenCheck,
-    desc: "Inspect matches, record decisions",
-  },
-] as const;
-
-const selectClass =
-  "h-11 w-full cursor-pointer rounded-xl border border-input bg-card px-3.5 text-base text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_color-mix(in_oklab,var(--ring)_22%,transparent)] aria-invalid:border-danger md:text-sm";
 
 export function SignUpForm() {
   const { signUp } = useAuth();
@@ -89,6 +72,9 @@ export function SignUpForm() {
 
   return (
     <motion.form animate={shake} onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <GoogleButton />
+      <OrDivider />
+
       <FormField id="name" label="Full name" error={err("name")}>
         <Input
           {...register("name")}
@@ -130,64 +116,25 @@ export function SignUpForm() {
         </FormField>
       </div>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Role</legend>
-        <Controller
-          control={control}
-          name="role"
-          render={({ field }) => (
-            <div role="radiogroup" aria-label="Role" className="grid grid-cols-2 gap-3">
-              {ROLE_OPTIONS.map((opt) => {
-                const checked = field.value === opt.value;
-                return (
-                  <label
-                    key={opt.value}
-                    className={cn(
-                      "has-[:focus-visible]:ring-ring relative flex cursor-pointer flex-col gap-1 rounded-xl border p-3.5 transition-colors has-[:focus-visible]:ring-2",
-                      checked ? "border-primary bg-semantic-soft" : "border-input hover:bg-muted",
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name={field.name}
-                      value={opt.value}
-                      checked={checked}
-                      onChange={() => field.onChange(opt.value)}
-                      disabled={isSubmitting}
-                      className="sr-only"
-                    />
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <opt.icon
-                        className={cn("size-4", checked ? "text-brand" : "text-muted-foreground")}
-                        aria-hidden
-                      />
-                      {opt.label}
-                    </span>
-                    <span className="text-muted-foreground text-xs">{opt.desc}</span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        />
-        <p className="text-muted-foreground text-xs">
-          Researcher and admin roles are assigned by an administrator.
-        </p>
-      </fieldset>
+      <Controller
+        control={control}
+        name="role"
+        render={({ field }) => (
+          <RoleField
+            name={field.name}
+            value={field.value}
+            onChange={field.onChange}
+            disabled={isSubmitting}
+          />
+        )}
+      />
 
       <FormField id="department" label="Department" error={err("department")}>
-        <select
+        <DepartmentSelect
           {...register("department")}
           {...fieldA11y("department", err("department"))}
-          className={selectClass}
           disabled={isSubmitting}
-        >
-          {DEPARTMENTS.map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
+        />
       </FormField>
 
       <FormField id="password" label="Password" error={err("password")}>

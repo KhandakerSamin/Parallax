@@ -71,3 +71,14 @@ export const signUpSchema = z
     path: ["confirmPassword"],
   });
 export type SignUpValues = z.infer<typeof signUpSchema>;
+
+export const googleCompleteSchema = z.object({
+  universityId: z
+    .string()
+    .trim()
+    .regex(UNIVERSITY_ID_PATTERN, "Use 4–20 letters, numbers or dashes, e.g. 221-35-123"),
+  role: z.enum(SELF_SIGNUP_ROLES, { error: "Choose a role" }),
+  department: z.enum(DEPARTMENTS, { error: "Choose your department" }),
+  consent: z.boolean().refine((v) => v, "Please confirm you understand how results are reported"),
+});
+export type GoogleCompleteValues = z.infer<typeof googleCompleteSchema>;

@@ -10,6 +10,7 @@ from app.core.errors import register_error_handlers
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    settings.check_production_safety()
     app = FastAPI(
         title="Parallax API",
         version="0.1.0",

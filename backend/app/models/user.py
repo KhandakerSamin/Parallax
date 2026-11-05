@@ -31,7 +31,10 @@ class User(Base):
     university_id: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     role: Mapped[Role] = mapped_column(Enum(Role, name="user_role", native_enum=False, length=20))
     department: Mapped[str] = mapped_column(String(80))
-    password_hash: Mapped[str] = mapped_column(String(255))
+    # None for accounts that only sign in with Google.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Google's stable account ID ("sub"), set once the account is linked to Google.
+    google_sub: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

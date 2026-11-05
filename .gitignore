@@ -66,3 +66,6 @@ desktop.ini
 # Local SQLite database (backend dev default)
 *.db
 *.db-journal
+
+# Vercel CLI project links
+.vercel
