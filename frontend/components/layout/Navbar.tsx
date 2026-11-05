@@ -3,7 +3,8 @@
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { NAV_LINKS } from "@/lib/constants/content";
@@ -11,17 +12,14 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { MobileNav } from "./MobileNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
 
 const SECTION_IDS = NAV_LINKS.map((l) => l.id);
 
-type NavbarProps = {
-  /** Rendered instead of the sign-in buttons when a user is signed in. */
-  userSlot?: ReactNode;
-};
-
 /** Sticky navbar: transparent at the top, frosted glass after 24px of scroll. */
-export function Navbar({ userSlot }: NavbarProps) {
+export function Navbar() {
   const pathname = usePathname();
+  const { user, status } = useAuth();
   const onHome = pathname === "/";
   const active = useActiveSection(onHome ? SECTION_IDS : []);
   const { scrollY } = useScroll();
@@ -73,7 +71,11 @@ export function Navbar({ userSlot }: NavbarProps) {
 
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
-          {userSlot ?? (
+          {status === "loading" ? (
+            <span aria-hidden className="size-9 animate-pulse rounded-full bg-muted" />
+          ) : user ? (
+            <UserMenu user={user} />
+          ) : (
             <div className="hidden items-center gap-1.5 md:flex">
               <Button asChild variant="ghost" size="sm">
                 <Link href="/sign-in">Sign in</Link>
@@ -83,7 +85,7 @@ export function Navbar({ userSlot }: NavbarProps) {
               </Button>
             </div>
           )}
-          <MobileNav active={active} hrefFor={hrefFor} signedIn={Boolean(userSlot)} />
+          <MobileNav active={active} hrefFor={hrefFor} signedIn={Boolean(user)} />
         </div>
       </motion.div>
     </header>
