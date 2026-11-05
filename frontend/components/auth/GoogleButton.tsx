@@ -1,7 +1,10 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { API_URL, USE_MOCK_AUTH } from "@/lib/auth/config";
 
 function GoogleMark() {
   return (
@@ -23,19 +26,63 @@ function GoogleMark() {
   );
 }
 
-/** "Continue with Google" — UI only for now; the OAuth handler is a stub. */
-export function GoogleButton() {
-  function handleClick() {
-    // TODO: redirect to `${API_URL}/auth/google` once the backend OAuth route exists.
-    toast.info("Google sign-in isn't connected yet", {
-      description: "Use your university email and password for now.",
-    });
+/** Messages for the `?error=` codes the backend's Google callback redirects with. */
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_unavailable:
+    "Google sign-in isn't set up on this server yet. Use your email and password.",
+  google_cancelled: "Google sign-in was cancelled.",
+  google_failed: "Google sign-in didn't complete. Please try again.",
+  google_domain: "Use your DIU Google account (@diu.edu.bd or @daffodilvarsity.edu.bd).",
+  google_conflict:
+    "That email's Parallax account is linked to a different Google account. Sign in with your password.",
+  google_disabled: "This account has been disabled. Contact an administrator.",
+};
+
+export function googleErrorMessage(code: string | null): string | null {
+  return code ? (GOOGLE_ERRORS[code] ?? null) : null;
+}
+
+type GoogleButtonProps = {
+  /** Same-site path to land on after signing in. */
+  next?: string;
+};
+
+/**
+ * "Continue with Google". A full-page navigation to the backend, which redirects to Google
+ * and back. In mock mode there is no backend, so it only explains that.
+ */
+export function GoogleButton({ next = "/dashboard" }: GoogleButtonProps) {
+  const [redirecting, setRedirecting] = useState(false);
+
+  if (USE_MOCK_AUTH) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className="w-full"
+        onClick={() =>
+          toast.info("Google sign-in needs the backend", {
+            description: "Turn off mock auth and start the API to use it.",
+          })
+        }
+      >
+        <GoogleMark />
+        Continue with Google
+      </Button>
+    );
   }
 
   return (
-    <Button type="button" variant="outline" size="lg" className="w-full" onClick={handleClick}>
-      <GoogleMark />
-      Continue with Google
+    <Button asChild variant="outline" size="lg" className="w-full">
+      <a
+        href={`${API_URL}/auth/google?next=${encodeURIComponent(next)}`}
+        onClick={() => setRedirecting(true)}
+        aria-disabled={redirecting || undefined}
+      >
+        {redirecting ? <Loader2 className="animate-spin" aria-hidden /> : <GoogleMark />}
+        {redirecting ? "Opening Google…" : "Continue with Google"}
+      </a>
     </Button>
   );
 }
