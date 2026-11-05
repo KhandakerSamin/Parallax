@@ -130,7 +130,7 @@ export const WEIGHT_PRESETS = [
 /* Hero                                                                */
 /* ------------------------------------------------------------------ */
 export const HERO = {
-  eyebrow: "Bangla · English · Banglish — academic similarity, explained",
+  eyebrow: "Bangla · English — academic similarity, explained",
   titleStart: "See your work from every ",
   titleEmphasis: "angle.",
   primaryCta: "Analyze a document",
@@ -359,7 +359,7 @@ export const MULTILINGUAL = {
   body: "DIU reports are written in English, in Bangla, and often in a mix of the two. Parallax uses multilingual embeddings, so the same idea lands in the same neighbourhood whatever language it was written in.",
   points: [
     "Bangla Unicode normalisation before comparison",
-    "Mixed-language and Banglish passages handled together",
+    "English and Bangla passages compared in one shared space",
     "Cross-lingual matches surfaced as evidence, not hidden",
   ],
   phrases: [
@@ -370,12 +370,6 @@ export const MULTILINGUAL = {
       lang: undefined,
     },
     { id: "bn", label: "Bangla", text: "ফেস রিকগনিশন ব্যবহার করে স্বয়ংক্রিয় হাজিরা", lang: "bn" },
-    {
-      id: "banglish",
-      label: "Banglish",
-      text: "face recognition diye automatic attendance",
-      lang: undefined,
-    },
   ],
   outlier: { label: "Unrelated", text: "Online grocery delivery platform" },
   caption: "Illustration of a shared embedding space, not real model output.",
@@ -483,7 +477,7 @@ export const FAQ = [
   },
   {
     q: "Which languages are supported?",
-    a: "English, Bangla, and mixed Bangla-English text, including Banglish written in Latin script.",
+    a: "English and Bangla, including documents that use both languages.",
   },
   {
     q: "What file types can I upload?",
