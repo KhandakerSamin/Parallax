@@ -5,10 +5,10 @@ import { SkipLink } from "@/components/layout/SkipLink";
 import ArchitectureSection from "@/components/ArchitectureSection";
 import Footer from "@/components/Footer";
 import InteractiveAnalyzer from "@/components/InteractiveAnalyzer";
-import PerspectiveCards from "@/components/PerspectiveCards";
 import { CorpusStats } from "@/components/landing/CorpusStats";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Perspectives } from "@/components/landing/Perspectives";
 import { Problem } from "@/components/landing/Problem";
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
         <Problem />
         <HowItWorks />
         <InteractiveAnalyzer />
-        <PerspectiveCards />
+        <Perspectives />
         <ArchitectureSection />
       </main>
       <Footer />
