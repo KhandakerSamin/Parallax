@@ -38,6 +38,11 @@ export type SignUpInput = {
   password: string;
 };
 
+/** What a first-time Google user adds; name and email come from Google. */
+export type GoogleCompleteInput = Pick<SignUpInput, "universityId" | "role" | "department">;
+
+export type GooglePending = { email: string; name: string };
+
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 /** Error returned by the auth API, with the HTTP status for branching (401, 409…). */

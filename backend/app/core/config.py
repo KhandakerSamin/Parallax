@@ -5,6 +5,8 @@ from functools import lru_cache
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEV_SECRET_KEY = "dev-only-secret-change-me"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -19,6 +21,12 @@ class Settings(BaseSettings):
     # Comma-separated origins allowed to call the API directly from a browser.
     allowed_origins: str = "http://localhost:3000"
 
+    # Public URL of the frontend. OAuth callbacks go through it so cookies stay on its domain.
+    public_url: str = "http://localhost:3000"
+
+    # Signs short-lived tokens (OAuth state, Google sign-up). Must be set in production.
+    secret_key: str = DEV_SECRET_KEY
+
     # ----- Auth -----
     allowed_email_domains: str = "diu.edu.bd,daffodilvarsity.edu.bd"
     session_cookie_name: str = Field(default="parallax_session", alias="AUTH_COOKIE_NAME")
@@ -28,6 +36,10 @@ class Settings(BaseSettings):
     remember_me_days: int = 30
     login_max_attempts: int = 5
     login_window_minutes: int = 15
+
+    # ----- Google sign-in (optional; the button reports "unavailable" until both are set) -----
+    google_client_id: str = ""
+    google_client_secret: str = ""
 
     @field_validator("database_url")
     @classmethod
@@ -44,6 +56,18 @@ class Settings(BaseSettings):
     @property
     def email_domains(self) -> list[str]:
         return [d.strip().lower() for d in self.allowed_email_domains.split(",") if d.strip()]
+
+    @property
+    def google_enabled(self) -> bool:
+        return bool(self.google_client_id and self.google_client_secret)
+
+    @property
+    def google_redirect_uri(self) -> str:
+        return f"{self.public_url.rstrip('/')}{self.api_prefix}/auth/google/callback"
+
+    def check_production_safety(self) -> None:
+        if self.app_env == "production" and self.secret_key in ("", DEV_SECRET_KEY, "change-me-to-a-random-secret"):
+            raise RuntimeError("Set SECRET_KEY to a long random value before running in production.")
 
     @property
     def secure_cookies(self) -> bool:

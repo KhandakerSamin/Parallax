@@ -59,22 +59,12 @@ class CamelModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, str_strip_whitespace=True)
 
 
-class RegisterRequest(CamelModel):
-    name: str = Field(min_length=2, max_length=80)
-    email: EmailStr
+class ProfileFields(CamelModel):
+    """Fields every account needs that Google cannot provide."""
+
     university_id: UniversityId
     role: Role
     department: str
-    password: Password = Field(json_schema_extra={"format": "password"})
-
-    @field_validator("email")
-    @classmethod
-    def _university_email(cls, value: str) -> str:
-        value = value.lower()
-        if not is_allowed_email(value):
-            domains = " or ".join(f"@{d}" for d in get_settings().email_domains)
-            raise ValueError(f"Use your university email ({domains}).")
-        return value
 
     @field_validator("role")
     @classmethod
@@ -89,6 +79,30 @@ class RegisterRequest(CamelModel):
         if value not in DEPARTMENTS:
             raise ValueError("Choose your department.")
         return value
+
+
+class RegisterRequest(ProfileFields):
+    name: str = Field(min_length=2, max_length=80)
+    email: EmailStr
+    password: Password = Field(json_schema_extra={"format": "password"})
+
+    @field_validator("email")
+    @classmethod
+    def _university_email(cls, value: str) -> str:
+        value = value.lower()
+        if not is_allowed_email(value):
+            domains = " or ".join(f"@{d}" for d in get_settings().email_domains)
+            raise ValueError(f"Use your university email ({domains}).")
+        return value
+
+
+class GoogleCompleteRequest(ProfileFields):
+    """Finishes a Google sign-up; name and email come from the verified Google identity."""
+
+
+class GooglePendingResponse(CamelModel):
+    email: str
+    name: str
 
 
 class LoginRequest(CamelModel):

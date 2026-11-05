@@ -1,0 +1,10 @@
+# Never upload local secrets, the virtualenv or the dev database.
+.env
+.venv/
+*.db
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+tests/
+Dockerfile
+.env.*

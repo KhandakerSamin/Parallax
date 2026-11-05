@@ -131,3 +131,56 @@ def purge_expired_sessions(db: Session) -> int:
     result = db.execute(delete(AuthSession).where(AuthSession.expires_at <= utcnow()))
     db.commit()
     return result.rowcount or 0
+
+
+# ----- Google sign-in --------------------------------------------------------
+
+
+def find_or_link_google_user(db: Session, *, sub: str, email: str) -> User | None:
+    """The account for this Google identity, linking it by verified email the first time.
+
+    Returns None when no account exists yet (the person must finish signing up).
+    """
+    user = db.scalar(select(User).where(User.google_sub == sub))
+    if user is None:
+        user = db.scalar(select(User).where(User.email == email.lower()))
+        if user is None:
+            return None
+        if user.google_sub and user.google_sub != sub:
+            return None  # the email's account is already tied to a different Google account
+        user.google_sub = sub
+    user.last_login_at = utcnow()
+    db.commit()
+    return user
+
+
+def register_google_user(
+    db: Session, *, sub: str, email: str, name: str, university_id: str, role, department: str
+) -> User:
+    """Create an account from a verified Google identity plus the profile fields Google lacks."""
+    taken = db.execute(
+        select(User.email, User.university_id).where(
+            or_(User.email == email, User.university_id == university_id, User.google_sub == sub)
+        )
+    ).first()
+    if taken:
+        raise DuplicateAccountError("universityId" if taken.university_id == university_id else "email")
+
+    user = User(
+        name=name,
+        email=email,
+        university_id=university_id,
+        role=role,
+        department=department,
+        password_hash=None,
+        google_sub=sub,
+        last_login_at=utcnow(),
+    )
+    db.add(user)
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise DuplicateAccountError("universityId" if "university" in str(exc.orig).lower() else "email") from exc
+    db.refresh(user)
+    return user
