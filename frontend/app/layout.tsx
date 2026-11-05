@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import type { ReactNode } from "react";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { MotionProvider } from "@/components/providers/MotionProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -37,7 +39,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body className="min-h-dvh">
         <ThemeProvider>
-          <MotionProvider>{children}</MotionProvider>
+          <MotionProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>
