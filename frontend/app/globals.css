@@ -389,6 +389,49 @@
   animation: twinkle 2.4s ease-in-out 0.8s infinite;
 }
 
+/* Auth brand panel colours: a soft light panel in light mode, deep navy in dark mode. */
+.brand-panel {
+  --bp-bg: #eef1fb;
+  --bp-fg: #0f172a;
+  --bp-muted: rgb(15 23 42 / 0.62);
+  --bp-line: rgb(15 23 42 / 0.1);
+  --bp-card: rgb(255 255 255 / 0.55);
+  --bp-card-strong: rgb(255 255 255 / 0.78);
+  --bp-track: rgb(15 23 42 / 0.08);
+  --bp-track-strong: rgb(15 23 42 / 0.2);
+  --bp-grid: rgb(15 23 42 / 0.05);
+  --bp-accent-a: #4f46e5;
+  --bp-accent-b: #0d9488;
+  --bp-accent-b-soft: rgb(13 148 136 / 0.12);
+  --bp-blob-a: 0.28;
+  --bp-blob-b: 0.22;
+  --bp-bar-1: #f59e0b;
+  --bp-bar-2: #6366f1;
+  --bp-bar-3: #14b8a6;
+  --bp-bar-4: #f43f5e;
+}
+
+.dark .brand-panel {
+  --bp-bg: #0b0f1a;
+  --bp-fg: #ffffff;
+  --bp-muted: rgb(255 255 255 / 0.6);
+  --bp-line: rgb(255 255 255 / 0.1);
+  --bp-card: rgb(255 255 255 / 0.05);
+  --bp-card-strong: rgb(255 255 255 / 0.1);
+  --bp-track: rgb(255 255 255 / 0.1);
+  --bp-track-strong: rgb(255 255 255 / 0.3);
+  --bp-grid: rgb(255 255 255 / 0.06);
+  --bp-accent-a: #a5b4fc;
+  --bp-accent-b: #5eead4;
+  --bp-accent-b-soft: rgb(20 184 166 / 0.2);
+  --bp-blob-a: 0.5;
+  --bp-blob-b: 0.35;
+  --bp-bar-1: #fbbf24;
+  --bp-bar-2: #a5b4fc;
+  --bp-bar-3: #5eead4;
+  --bp-bar-4: #fda4af;
+}
+
 /* Auth brand panel: slow orbit rings and a beam scanning the sample report. */
 @keyframes orbit {
   to {
