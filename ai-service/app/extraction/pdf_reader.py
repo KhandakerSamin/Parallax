@@ -70,7 +70,7 @@ def read_pdf(path: str | Path, *, running_line_ratio: float = 0.3) -> PdfContent
     """Extract lines from every page and drop running headers/footers and page numbers.
 
     A line counts as a running header/footer when the same normalised text appears on at
-    least ``running_line_ratio`` of the pages (and on at least 3 pages).
+    least ``running_line_ratio`` of the pages (and on at least 5 pages).
     """
     pages: list[Page] = []
     private_use = 0
@@ -95,7 +95,8 @@ def read_pdf(path: str | Path, *, running_line_ratio: float = 0.3) -> PdfContent
     on_pages: Counter[str] = Counter()
     for page in pages:
         on_pages.update({_signature(line.text) for line in page.lines})
-    threshold = max(3, int(len(pages) * running_line_ratio))
+    # At least 5 pages, so a few "CHAPTER n" headings never look like a running header.
+    threshold = max(5, int(len(pages) * running_line_ratio))
     running = {sig for sig, count in on_pages.items() if count >= threshold and len(sig) < 120}
 
     for page in pages:
