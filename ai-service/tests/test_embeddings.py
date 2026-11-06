@@ -73,6 +73,12 @@ def test_passages_never_cross_sections():
     assert [p.section for p in make_passages(doc)] == ["Intro", "Method"]
 
 
+def test_short_tail_is_folded_into_the_previous_passage():
+    text = " ".join(["word"] * 70) + ". Short closing remark here."  # 70 fills a window, the tail does not
+    [passage] = make_passages(document(sections=[section(text)]))
+    assert passage.text.endswith("Short closing remark here.")
+
+
 def test_tiny_sections_are_dropped():
     assert make_passages(document(sections=[section("Too short.")])) == []
 
