@@ -13,12 +13,12 @@ export default function SignInPage() {
     <>
       <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
       <p className="text-muted-foreground mt-2">Sign in to check documents and review matches.</p>
-      <div className="mt-8">
+      <div className="mt-6">
         <Suspense>
           <SignInForm />
         </Suspense>
       </div>
-      <p className="text-muted-foreground mt-8 text-center text-sm">
+      <p className="text-muted-foreground mt-6 text-center text-sm">
         New to Parallax?{" "}
         <Link href="/sign-up" className="text-brand font-medium hover:underline">
           Create an account
