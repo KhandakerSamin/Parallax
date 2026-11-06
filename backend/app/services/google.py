@@ -32,6 +32,8 @@ class GoogleIdentity:
     sub: str
     email: str
     name: str
+    # Profile photo URL, when Google provides an https one.
+    picture: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,4 +117,7 @@ def parse_id_token(id_token: str, *, now: float | None = None) -> GoogleIdentity
 
     email = str(claims["email"]).lower()
     name = str(claims.get("name") or email.split("@")[0]).strip()[:80]
-    return GoogleIdentity(sub=str(claims["sub"]), email=email, name=name)
+    picture = claims.get("picture")
+    if not (isinstance(picture, str) and picture.startswith("https://") and len(picture) <= 512):
+        picture = None
+    return GoogleIdentity(sub=str(claims["sub"]), email=email, name=name, picture=picture)

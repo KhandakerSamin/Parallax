@@ -136,7 +136,7 @@ def purge_expired_sessions(db: Session) -> int:
 # ----- Google sign-in --------------------------------------------------------
 
 
-def find_or_link_google_user(db: Session, *, sub: str, email: str) -> User | None:
+def find_or_link_google_user(db: Session, *, sub: str, email: str, picture: str | None = None) -> User | None:
     """The account for this Google identity, linking it by verified email the first time.
 
     Returns None when no account exists yet (the person must finish signing up).
@@ -149,13 +149,23 @@ def find_or_link_google_user(db: Session, *, sub: str, email: str) -> User | Non
         if user.google_sub and user.google_sub != sub:
             return None  # the email's account is already tied to a different Google account
         user.google_sub = sub
+    if picture:
+        user.avatar_url = picture
     user.last_login_at = utcnow()
     db.commit()
     return user
 
 
 def register_google_user(
-    db: Session, *, sub: str, email: str, name: str, university_id: str, role, department: str
+    db: Session,
+    *,
+    sub: str,
+    email: str,
+    name: str,
+    university_id: str,
+    role,
+    department: str,
+    picture: str | None = None,
 ) -> User:
     """Create an account from a verified Google identity plus the profile fields Google lacks."""
     taken = db.execute(
@@ -174,6 +184,7 @@ def register_google_user(
         department=department,
         password_hash=None,
         google_sub=sub,
+        avatar_url=picture,
         last_login_at=utcnow(),
     )
     db.add(user)
