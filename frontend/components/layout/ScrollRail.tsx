@@ -1,41 +1,62 @@
 "use client";
 
 import { motion, useScroll, useSpring } from "framer-motion";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * Replaces the browser scrollbar with a thin gradient rail on the right edge,
  * styled like the top scroll-progress bar. The fill grows as you scroll; click or
- * drag anywhere on the rail to jump. Hidden when the page doesn't scroll.
+ * drag anywhere on the rail to jump. Hidden when there is nothing to scroll.
+ *
+ * Without `container` it tracks the page. With `container` it tracks that element
+ * and sits on its right edge (the parent must be `position: relative`).
  */
-export function ScrollRail() {
-  const { scrollYProgress } = useScroll();
+export function ScrollRail({
+  container,
+  className,
+}: {
+  container?: RefObject<HTMLElement | null>;
+  className?: string;
+}) {
+  const { scrollYProgress } = useScroll(container ? { container } : undefined);
   const scaleY = useSpring(scrollYProgress, { stiffness: 140, damping: 30, restDelta: 0.001 });
   const railRef = useRef<HTMLDivElement>(null);
   const [scrollable, setScrollable] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const check = () => setScrollable(root.scrollHeight > window.innerHeight + 4);
+    const target = container?.current ?? document.documentElement;
+    const check = () => {
+      const visible = container ? target.clientHeight : window.innerHeight;
+      setScrollable(target.scrollHeight > visible + 4);
+    };
     check();
     const observer = new ResizeObserver(check);
-    observer.observe(document.body);
+    observer.observe(container ? target : document.body);
+    if (container && target.firstElementChild) observer.observe(target.firstElementChild);
     window.addEventListener("resize", check);
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", check);
     };
-  }, []);
+  }, [container]);
 
   const seek = (clientY: number) => {
     const rail = railRef.current;
     if (!rail) return;
     const { top, height } = rail.getBoundingClientRect();
     const ratio = Math.min(1, Math.max(0, (clientY - top) / height));
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    window.scrollTo({ top: ratio * max, behavior: "instant" });
+    const target = container?.current;
+    if (target) {
+      target.scrollTo({
+        top: ratio * (target.scrollHeight - target.clientHeight),
+        behavior: "instant",
+      });
+    } else {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo({ top: ratio * max, behavior: "instant" });
+    }
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -58,7 +79,11 @@ export function ScrollRail() {
       onPointerMove={onPointerMove}
       onPointerUp={stopDrag}
       onPointerCancel={stopDrag}
-      className="group fixed inset-y-0 right-0 z-[70] hidden w-3 cursor-pointer touch-none justify-end select-none sm:flex"
+      className={cn(
+        "group inset-y-0 right-0 z-[70] hidden w-3 cursor-pointer touch-none justify-end select-none sm:flex",
+        container ? "absolute" : "fixed",
+        className,
+      )}
     >
       <div
         className={cn(
