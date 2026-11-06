@@ -6,9 +6,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { API_URL, USE_MOCK_AUTH } from "@/lib/auth/config";
 
-function GoogleMark() {
+/** Google's "G" mark. */
+export function GoogleMark({ className = "size-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className="size-4">
+    <svg viewBox="0 0 24 24" aria-hidden className={className}>
       <path
         fill="#4285F4"
         d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8z"
