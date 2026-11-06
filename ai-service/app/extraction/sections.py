@@ -184,6 +184,11 @@ def match_heading(line: Line, next_line: Line | None, body_size: float) -> tuple
         # "1. The system…" is usually a list item; demand heading styling for single numbers.
         styled = line.bold or line.size >= body_size + 1
         if title_ok and (styled or (depth >= 2 and len(text) <= 70)):
+            # "1. INTRODUCTION" / "2. Literature Review": a chapter without the word "Chapter".
+            letters = [ch for ch in title if ch.isalpha()]
+            shouting = letters and sum(ch.isupper() for ch in letters) / len(letters) > 0.8
+            if depth == 1 and styled and (shouting or _NAMED.match(title.strip())):
+                return 1, number, title.strip(), False
             return min(depth + 1, 4), number, title.strip(), False
 
     if line.size >= body_size + 2 and _looks_like_title(line, body_size) and len(text) >= 3:

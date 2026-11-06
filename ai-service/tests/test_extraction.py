@@ -183,3 +183,20 @@ def test_split_unnumbered_references():
         "Smith, J. (2019). Deep learning. MIT Press.",
     ]
     assert len(split_references(lines)) == 2
+
+
+def test_numbered_chapter_without_the_word_chapter():
+    from app.extraction.pdf_reader import Line
+    from app.extraction.sections import match_heading
+
+    assert match_heading(Line("1. INTRODUCTION", 12, True), None, 12) == (1, "1", "INTRODUCTION", False)
+    assert match_heading(Line("2. Literature Review", 12, True), None, 12)[0] == 1
+    # A plain numbered list item stays body text.
+    assert match_heading(Line("1. The system stores every record.", 12, False), None, 12) is None
+
+
+def test_legacy_bangla_font_marks():
+    from app.extraction.document import _LEGACY_BANGLA
+
+    assert len(_LEGACY_BANGLA.findall("Avgv‡`i †`k evsjv‡`k")) >= 3
+    assert _LEGACY_BANGLA.findall("The café © 2024 costs ±5 units.") == []
