@@ -4,7 +4,11 @@
 2. Look up each passage's nearest corpus passages in the FAISS index. Any report
    that comes up becomes a candidate source.
 3. Semantic score: the share of the report's words that sit in passages with a
-   close paraphrase (cosine >= ``semantic_threshold``) in that source.
+   close paraphrase in that source. A passage pair is a close paraphrase when it is
+   near-identical, or when it is similar *and* stands out from the passage's background:
+   the similarity of the 4th-8th best other reports. Every SWE report has use-case tables
+   and metric definitions that look alike; those have a crowded background and never
+   stand out, while reworded or translated text has one source far above the rest.
 4. Lexical score: the share of the report's words that sit in sentences reusing
    the source's wording (word-shingle overlap), computed for the strongest candidates.
 5. Keep sources whose evidence clears the bar, best first, with the passages side by side.
@@ -34,10 +38,12 @@ from app.similarity.lexical import SentenceMatch, ShingleMatcher, words
 
 @dataclass(frozen=True)
 class AnalyzerConfig:
-    neighbours: int = 20  # nearest corpus passages fetched per submitted passage
-    # Cosine at which two passages count as a close paraphrase. On the SWE corpus, 0.80-0.85
-    # is mostly two reports on the same topic; rewording of the same paragraph starts near 0.85.
-    semantic_threshold: float = 0.85
+    neighbours: int = 60  # nearest corpus passages fetched per submitted passage
+    # Close-paraphrase rule (calibrated on the SWE corpus with LaBSE, see docs/similarity-engine.md):
+    semantic_floor: float = 0.75  # never a paraphrase below this cosine
+    semantic_standout: float = 0.15  # ...and must beat the passage's background by this much
+    near_identical: float = 0.95  # at or above this, always a match (even if several reports share it)
+    background_ranks: tuple[int, int] = (3, 8)  # which other reports form the background (0-based)
     lexical_min_overlap: float = 0.5  # share of a sentence's shingles that must reappear
     shortlist: int = 25  # candidates that get the (slower) lexical comparison
     max_matches: int = 10
@@ -88,22 +94,23 @@ class Analyzer:
 
         exclude = doc_id if doc_id in self.corpus or doc_id in self.index.doc_ids else None
         hits_per_passage = self.index.search(vectors, cfg.neighbours, exclude_doc=exclude)
+        background = [self._background_score(hits) for hits in hits_per_passage]
 
-        candidates = self._semantic_candidates(passages, hits_per_passage, total_words)
+        candidates = self._semantic_candidates(passages, hits_per_passage, background, total_words)
         shortlist = sorted(candidates.values(), key=lambda c: self._semantic_strength(c), reverse=True)
         shortlist = shortlist[: cfg.shortlist]
         for candidate in shortlist:
             self._score_lexical(candidate, parts, total_words)
 
         matches = [
-            self._match(candidate, passages)
+            self._match(candidate, passages, background)
             for candidate in shortlist
             if max(candidate.lexical, candidate.semantic) >= cfg.min_score
         ]
         matches.sort(key=lambda m: m.overall, reverse=True)
         matches = matches[: cfg.max_matches]
 
-        summary = self._summary(matches, shortlist, passages, parts, total_words)
+        summary = self._summary(matches, shortlist, passages, background, total_words)
         return AnalysisResult(
             document=DocumentInfo(
                 id=doc_id,
@@ -121,8 +128,23 @@ class Analyzer:
 
     # ── semantic ──────────────────────────────────────────
 
+    def _background_score(self, hits: list[Hit]) -> float:
+        """Typical similarity of this passage to reports it was not taken from."""
+        per_report: dict[str, float] = {}
+        for hit in hits:  # best first
+            per_report.setdefault(hit.passage.doc_id, hit.score)
+        start, end = self.config.background_ranks
+        background = list(per_report.values())[start:end]
+        return sum(background) / len(background) if background else 0.0
+
+    def _is_close(self, hit: Hit, background: float) -> bool:
+        cfg = self.config
+        if hit.score >= cfg.near_identical:
+            return True
+        return hit.score >= cfg.semantic_floor and hit.score - background >= cfg.semantic_standout
+
     def _semantic_candidates(
-        self, passages: list[Passage], hits_per_passage: list[list[Hit]], total_words: int
+        self, passages: list[Passage], hits_per_passage: list[list[Hit]], background: list[float], total_words: int
     ) -> dict[str, _Candidate]:
         candidates: dict[str, _Candidate] = {}
         for passage, hits in zip(passages, hits_per_passage, strict=True):
@@ -133,9 +155,7 @@ class Analyzer:
                     candidate.best[passage.index] = hit
         for candidate in candidates.values():
             close = sum(
-                len(words(passages[i].text))
-                for i, hit in candidate.best.items()
-                if hit.score >= self.config.semantic_threshold
+                len(words(passages[i].text)) for i, hit in candidate.best.items() if self._is_close(hit, background[i])
             )
             candidate.semantic = _round(close / total_words) if total_words else 0.0
         return candidates
@@ -172,7 +192,7 @@ class Analyzer:
         # Verbatim reuse should never be averaged away by a lower semantic score.
         return _round(max(weighted, lexical))
 
-    def _match(self, candidate: _Candidate, passages: list[Passage]) -> Match:
+    def _match(self, candidate: _Candidate, passages: list[Passage], background: list[float]) -> Match:
         evidence: list[Evidence] = [
             Evidence(
                 perspective="lexical",
@@ -184,8 +204,8 @@ class Analyzer:
         ]
         lexically_covered = {m.query for _, m in candidate.sentence_matches or []}
         for i, hit in sorted(candidate.best.items(), key=lambda item: item[1].score, reverse=True):
-            if hit.score < self.config.semantic_threshold:
-                break
+            if not self._is_close(hit, background[i]):
+                continue
             passage = passages[i]
             if any(sentence in passage.text for sentence in lexically_covered):
                 continue  # already shown as reused wording
@@ -210,7 +230,7 @@ class Analyzer:
         matches: list[Match],
         shortlist: list[_Candidate],
         passages: list[Passage],
-        parts: list[tuple[str, str, str]],
+        background: list[float],
         total_words: int,
     ) -> AnalysisSummary:
         cfg = self.config
@@ -219,7 +239,7 @@ class Analyzer:
         for candidate in shortlist:
             for _, m in candidate.sentence_matches or []:
                 reused_sentences[m.query] = max(reused_sentences[m.query], m.overlap)
-            paraphrased |= {i for i, hit in candidate.best.items() if hit.score >= cfg.semantic_threshold}
+            paraphrased |= {i for i, hit in candidate.best.items() if self._is_close(hit, background[i])}
         lexical = sum(len(words(s)) * o for s, o in reused_sentences.items())
         semantic = sum(len(words(passages[i].text)) for i in paraphrased)
         overall = max((m.overall for m in matches), default=0.0)

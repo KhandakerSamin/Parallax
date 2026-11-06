@@ -1,7 +1,7 @@
 """Compare every corpus report with all the others (leave-one-out).
 
     python scripts/scan_corpus.py                        # default thresholds
-    python scripts/scan_corpus.py --semantic-threshold 0.85 --limit 50
+    python scripts/scan_corpus.py --floor 0.75 --standout 0.15 --limit 50
 
 Prints the score distribution and the strongest pairs, and writes every report's
 top matches to data/processed/_scan.json (git-ignored). Used to calibrate the
@@ -34,15 +34,16 @@ def percentiles(values: list[float]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--semantic-threshold", type=float)
+    parser.add_argument("--floor", type=float, help="override the semantic floor")
+    parser.add_argument("--standout", type=float, help="override the semantic standout")
     parser.add_argument("--limit", type=int, help="scan only the first N reports")
     parser.add_argument("--top", type=int, default=15, help="pairs to print")
     args = parser.parse_args()
 
     engine = Engine.load(settings.data_dir)
     analyzer = engine.analyzer
-    if args.semantic_threshold is not None:
-        analyzer.config = replace(analyzer.config, semantic_threshold=args.semantic_threshold)
+    overrides = {"semantic_floor": args.floor, "semantic_standout": args.standout}
+    analyzer.config = replace(analyzer.config, **{k: v for k, v in overrides.items() if v is not None})
     doc_ids = sorted(analyzer.corpus.documents)[: args.limit]
 
     started = time.time()
@@ -72,7 +73,7 @@ def main() -> int:
     levels = Counter(r["level"] for r in rows)
     print(
         f"\nScanned {len(rows)} reports in {time.time() - started:.0f}s "
-        f"(semantic threshold {analyzer.config.semantic_threshold})"
+        f"(semantic floor {analyzer.config.semantic_floor}, standout {analyzer.config.semantic_standout})"
     )
     print(f"top lexical  : {percentiles(top_lexical)}")
     print(f"top semantic : {percentiles(top_semantic)}")
