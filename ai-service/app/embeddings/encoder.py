@@ -20,7 +20,7 @@ class Encoder(Protocol):
     name: str
     dim: int
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str], show_progress: bool = False) -> np.ndarray:
         """Return a float32 array of shape (len(texts), dim) with unit-length rows."""
         ...
 
@@ -80,7 +80,7 @@ class HashingEncoder:
     def _bucket(self, token: str) -> int:
         return int.from_bytes(hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest(), "little") % self.dim
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str], show_progress: bool = False) -> np.ndarray:
         vectors = np.zeros((len(texts), self.dim), dtype=np.float32)
         for row, text in enumerate(texts):
             words = re.findall(r"\w+", text.lower())
