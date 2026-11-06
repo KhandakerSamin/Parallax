@@ -1,7 +1,6 @@
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { CorpusStats } from "@/components/landing/CorpusStats";
 import { Explainability } from "@/components/landing/Explainability";
@@ -21,7 +20,6 @@ export default function Home() {
     <>
       <div id="top" />
       <SkipLink />
-      <ScrollProgress />
       <Navbar />
       <main id="main" className="flex flex-col">
         <Hero />
