@@ -14,6 +14,9 @@ from app.extraction.sections import segment
 MIN_BODY_WORDS = 500
 _BANGLA = re.compile(r"[ঀ-৿]")
 _LATIN = re.compile(r"[A-Za-z]")
+# Legacy (non-Unicode) Bangla fonts such as SutonnyMJ map Bangla glyphs onto Latin-1
+# punctuation, so "বাংলাদেশ" comes out as "evsjv‡`k". These marks inside words give it away.
+_LEGACY_BANGLA = re.compile(r"[a-zA-Z][‡ˆ†‰Š¨©ª«¯°±²³´µ¶·¸¹º»¼½¾¿×Ö]|[‡ˆ†‰Š][a-zA-Z`]")
 
 
 @dataclass
@@ -100,8 +103,10 @@ def extract_document(path: str | Path, doc_id: str | None = None) -> ExtractedDo
 
     if words < MIN_BODY_WORDS:
         document.flags.append("little_text")  # likely a scanned PDF; needs OCR
-    if content.private_use_chars > 300 and bangla < 50:
-        document.flags.append("legacy_bangla_font")  # e.g. SutonnyMJ: text is not real Unicode
+    legacy_marks = len(_LEGACY_BANGLA.findall(sample))
+    document.stats["legacy_font_marks"] = legacy_marks
+    if legacy_marks > 100 and legacy_marks > 0.002 * max(len(sample), 1):
+        document.flags.append("legacy_bangla_font")  # e.g. SutonnyMJ: Bangla text is not real Unicode
     if segmented.body_start_page is None:
         document.flags.append("no_structure")
     if not abstract:
