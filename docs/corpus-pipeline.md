@@ -5,7 +5,10 @@ How Parallax builds its reference corpus of DIU reports. Everything here runs fr
 ```
 DIU DSpace ──harvest_dspace.py──▶ data/raw/<id>.pdf + data/metadata/corpus.jsonl
            ──extract_corpus.py──▶ data/processed/<id>.json + data/metadata/extraction_summary.json
+           ──build_index.py────▶ data/embeddings/ (FAISS passage index)
 ```
+
+Step 3, the index, and how reports are compared are covered in [similarity-engine.md](similarity-engine.md).
 
 ## 1. Harvest
 
