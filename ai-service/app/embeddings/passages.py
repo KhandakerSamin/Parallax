@@ -47,9 +47,9 @@ def _windows(text: str, target_words: int) -> Iterable[str]:
         yield " ".join(buffer)
 
 
-def make_passages(document: dict, *, target_words: int = TARGET_WORDS, min_words: int = MIN_WORDS) -> list[Passage]:
-    """Passages from an extracted document (the dict from ``ExtractedDocument.to_dict``)."""
-    doc_id = str(document["doc_id"])
+def comparable_parts(document: dict) -> list[tuple[str, str, str]]:
+    """(title, kind, text) for every part of a report that is compared: the abstract and the
+    chapters, minus appendices and references. ``document`` is ``ExtractedDocument.to_dict()``."""
     parts: list[tuple[str, str, str]] = []
     if document.get("abstract"):
         parts.append(("Abstract", "abstract", document["abstract"]))
@@ -58,14 +58,20 @@ def make_passages(document: dict, *, target_words: int = TARGET_WORDS, min_words
             continue
         if section.get("text"):
             parts.append((section.get("title", ""), section.get("kind", "other"), section["text"]))
+    return parts
 
+
+def make_passages(document: dict, *, target_words: int = TARGET_WORDS, min_words: int = MIN_WORDS) -> list[Passage]:
+    """Passages from an extracted document, in reading order."""
+    doc_id = str(document["doc_id"])
     passages: list[Passage] = []
-    for title, kind, text in parts:
+    for title, kind, text in comparable_parts(document):
         windows = list(_windows(text, target_words))
         # Fold a short tail into the previous passage of the same section.
         if len(windows) > 1 and len(windows[-1].split()) < min_words:
-            windows[-2] = f"{windows[-2]} {windows.pop()}"
+            tail = windows.pop()
+            windows[-1] = f"{windows[-1]} {tail}"
         for window in windows:
-            if len(window.split()) >= min_words or len(windows) == 1 and len(window.split()) >= min_words // 2:
+            if len(window.split()) >= min_words:
                 passages.append(Passage(doc_id, len(passages), title, kind, window))
     return passages
