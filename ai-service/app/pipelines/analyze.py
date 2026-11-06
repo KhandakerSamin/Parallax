@@ -35,7 +35,9 @@ from app.similarity.lexical import SentenceMatch, ShingleMatcher, words
 @dataclass(frozen=True)
 class AnalyzerConfig:
     neighbours: int = 20  # nearest corpus passages fetched per submitted passage
-    semantic_threshold: float = 0.80  # cosine at which two passages count as a close paraphrase
+    # Cosine at which two passages count as a close paraphrase. On the SWE corpus, 0.80-0.85
+    # is mostly two reports on the same topic; rewording of the same paragraph starts near 0.85.
+    semantic_threshold: float = 0.85
     lexical_min_overlap: float = 0.5  # share of a sentence's shingles that must reappear
     shortlist: int = 25  # candidates that get the (slower) lexical comparison
     max_matches: int = 10
@@ -72,14 +74,18 @@ class Analyzer:
     def analyze(self, document: dict) -> AnalysisResult:
         cfg = self.config
         doc_id = str(document.get("doc_id", "submission"))
-        passages = make_passages(document)
         parts = comparable_parts(document)
+        stored = self.index.stored(doc_id)
+        if stored:  # a corpus report: reuse its indexed passages instead of re-encoding them
+            passages, vectors = stored
+        else:
+            passages = make_passages(document)
+            vectors = self.encoder.encode([p.text for p in passages])
         total_words = sum(len(words(text)) for _, _, text in parts)
         notes: list[str] = []
         if not passages:
             notes.append("The report has too little readable text to compare.")
 
-        vectors = self.encoder.encode([p.text for p in passages])
         exclude = doc_id if doc_id in self.corpus or doc_id in self.index.doc_ids else None
         hits_per_passage = self.index.search(vectors, cfg.neighbours, exclude_doc=exclude)
 

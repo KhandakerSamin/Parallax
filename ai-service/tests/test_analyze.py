@@ -108,3 +108,12 @@ def test_encoder_must_match_the_index():
     index = PassageIndex(256, "some-other-model")
     with pytest.raises(ValueError):
         Analyzer(index, HashingEncoder(), Corpus())
+
+
+def test_corpus_reports_reuse_their_indexed_vectors(analyzer, monkeypatch):
+    def fail(*args, **kwargs):
+        raise AssertionError("a corpus report should not be re-encoded")
+
+    monkeypatch.setattr(analyzer.encoder, "encode", fail)
+    result = analyzer.analyze(analyzer.corpus.get("f1"))
+    assert result.document.passages == 1
