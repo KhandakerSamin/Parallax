@@ -66,8 +66,10 @@ def _signature(text: str) -> str:
     return re.sub(r"\d+", "#", text.lower()).strip()
 
 
-def read_pdf(path: str | Path, *, running_line_ratio: float = 0.3) -> PdfContent:
+def read_pdf(source: str | Path | bytes, *, running_line_ratio: float = 0.3) -> PdfContent:
     """Extract lines from every page and drop running headers/footers and page numbers.
+
+    ``source`` is a file path or the PDF's bytes (an upload, read without touching disk).
 
     A line counts as a running header/footer when the same normalised text appears on at
     least ``running_line_ratio`` of the pages (and on at least 5 pages).
@@ -76,7 +78,8 @@ def read_pdf(path: str | Path, *, running_line_ratio: float = 0.3) -> PdfContent
     private_use = 0
     size_weight: Counter[float] = Counter()
 
-    with pymupdf.open(path) as doc:
+    opened = pymupdf.open(stream=source, filetype="pdf") if isinstance(source, bytes) else pymupdf.open(source)
+    with opened as doc:
         for index, pdf_page in enumerate(doc):
             page = Page(number=index + 1)
             for block in pdf_page.get_text("dict", sort=True)["blocks"]:

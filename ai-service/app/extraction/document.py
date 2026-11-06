@@ -57,9 +57,15 @@ class ExtractedDocument:
         return data
 
 
-def extract_document(path: str | Path, doc_id: str | None = None) -> ExtractedDocument:
-    path = Path(path)
-    content = read_pdf(path)
+def extract_document(source: str | Path | bytes, doc_id: str | None = None) -> ExtractedDocument:
+    """``source`` is a PDF path or the PDF's bytes; bytes need an explicit ``doc_id``."""
+    if isinstance(source, bytes):
+        content = read_pdf(source)
+        doc_id = doc_id or "document"
+    else:
+        source = Path(source)
+        content = read_pdf(source)
+        doc_id = doc_id or source.stem
     segmented = segment(content.pages, content.body_font_size)
 
     sections = [
@@ -76,7 +82,7 @@ def extract_document(path: str | Path, doc_id: str | None = None) -> ExtractedDo
     ]
     abstract = clean_text(segmented.abstract)
     document = ExtractedDocument(
-        doc_id=doc_id or path.stem,
+        doc_id=doc_id,
         page_count=len(content.pages),
         abstract=abstract,
         sections=sections,
