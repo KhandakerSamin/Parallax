@@ -128,3 +128,11 @@ def test_add_rejects_mismatched_lengths():
     built = PassageIndex(8, "test")
     with pytest.raises(ValueError):
         built.add([Passage("a", 0, "", "other", "text")], np.zeros((2, 8), dtype=np.float32))
+
+
+def test_stored_returns_a_reports_passages_and_vectors(index):
+    built, encoder = index
+    passages, vectors = built.stored("b")
+    assert [p.doc_id for p in passages] == ["b"]
+    assert np.allclose(vectors, encoder.encode([passages[0].text]))
+    assert built.stored("missing") is None
