@@ -37,21 +37,33 @@ class SentenceMatch:
     query: str
     source: str
     overlap: float  # share of the query sentence's shingles found in the source sentence
+    source_section: str = ""
 
 
 class ShingleMatcher:
-    """Finds, for each query sentence, the source sentence that shares the most wording."""
+    """Finds, for each query sentence, the source sentence that shares the most wording.
 
-    def __init__(self, source_text: str, n: int = SHINGLE_WORDS):
+    ``source`` is a text, or a list of ``(section title, text)`` so matches can say where
+    in the source report they were found.
+    """
+
+    def __init__(self, source: str | list[tuple[str, str]], n: int = SHINGLE_WORDS):
         self.n = n
-        self.sentences = [s for s in segment_sentences(source_text) if len(words(s)) >= MIN_SENTENCE_WORDS]
+        self.sentences: list[str] = []
+        self.sections: list[str] = []
         self.all_shingles: set[tuple[str, ...]] = set()
         self._postings: dict[tuple[str, ...], list[int]] = defaultdict(list)
-        for i, sentence in enumerate(self.sentences):
-            sentence_shingles = shingles(sentence, n)
-            self.all_shingles |= sentence_shingles
-            for shingle in sentence_shingles:
-                self._postings[shingle].append(i)
+        for title, text in [("", source)] if isinstance(source, str) else source:
+            for sentence in segment_sentences(text):
+                if len(words(sentence)) < MIN_SENTENCE_WORDS:
+                    continue
+                i = len(self.sentences)
+                self.sentences.append(sentence)
+                self.sections.append(title)
+                sentence_shingles = shingles(sentence, n)
+                self.all_shingles |= sentence_shingles
+                for shingle in sentence_shingles:
+                    self._postings[shingle].append(i)
 
     def best_match(self, sentence: str, min_overlap: float = MIN_OVERLAP) -> SentenceMatch | None:
         if len(words(sentence)) < MIN_SENTENCE_WORDS:
@@ -65,7 +77,9 @@ class ShingleMatcher:
             return None
         best, count = hits.most_common(1)[0]
         overlap = count / len(query)
-        return SentenceMatch(sentence, self.sentences[best], round(overlap, 4)) if overlap >= min_overlap else None
+        if overlap < min_overlap:
+            return None
+        return SentenceMatch(sentence, self.sentences[best], round(overlap, 4), self.sections[best])
 
     def matches(self, query_text: str, min_overlap: float = MIN_OVERLAP) -> list[SentenceMatch]:
         found = (self.best_match(s, min_overlap) for s in segment_sentences(query_text))

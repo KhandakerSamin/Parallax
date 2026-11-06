@@ -39,3 +39,9 @@ def test_ignores_unrelated_and_short_sentences():
     matcher = ShingleMatcher(SOURCE)
     assert matcher.best_match("Rice crop disease classification from leaf images using transfer learning.") is None
     assert matcher.best_match("We describe our data first.") is None  # under the minimum length
+
+
+def test_matches_report_the_source_section():
+    matcher = ShingleMatcher([("Introduction", "Nothing to see here at all, honestly."), ("Dataset", COPIED)])
+    match = matcher.best_match(COPIED)
+    assert match is not None and match.source_section == "Dataset"
