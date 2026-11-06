@@ -24,11 +24,14 @@ class Corpus:
         """Display metadata for a report: title, authors, supervisor, year, link."""
         document = self.documents.get(doc_id) or {}
         meta = document.get("meta") or {}
+        supervisor = meta.get("supervisor")
+        if isinstance(supervisor, list):  # DSpace may list several, or none
+            supervisor = ", ".join(supervisor) or None
         return {
             "id": doc_id,
             "title": meta.get("title") or f"Report {doc_id}",
             "authors": meta.get("authors") or [],
-            "supervisor": meta.get("supervisor"),
+            "supervisor": supervisor,
             "year": (meta.get("date_issued") or "")[:4] or None,
             "type": meta.get("type"),
             "url": meta.get("url"),
