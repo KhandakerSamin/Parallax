@@ -45,7 +45,7 @@ def analyzer():
     for document in corpus.documents.values():
         passages = make_passages(document)
         index.add(passages, encoder.encode([p.text for p in passages]))
-    return Analyzer(index, encoder, corpus, AnalyzerConfig(semantic_threshold=0.6))
+    return Analyzer(index, encoder, corpus, AnalyzerConfig(semantic_floor=0.6))
 
 
 def test_copied_report_is_matched_to_its_source(analyzer):
@@ -117,3 +117,35 @@ def test_corpus_reports_reuse_their_indexed_vectors(analyzer, monkeypatch):
     monkeypatch.setattr(analyzer.encoder, "encode", fail)
     result = analyzer.analyze(analyzer.corpus.get("f1"))
     assert result.document.passages == 1
+
+
+def _hits(*scores):
+    from app.embeddings.index import Hit
+    from app.embeddings.passages import Passage
+
+    return [Hit(Passage(f"d{i}", 0, "", "other", "text"), s) for i, s in enumerate(scores)]
+
+
+def test_template_text_with_a_crowded_background_is_not_a_paraphrase(analyzer):
+    hits = _hits(0.88, 0.87, 0.87, 0.86, 0.86, 0.85, 0.85, 0.84)  # every report has this table
+    background = analyzer._background_score(hits)
+    assert not analyzer._is_close(hits[0], background)
+
+
+def test_text_that_stands_out_from_its_background_is_a_paraphrase(analyzer):
+    hits = _hits(0.80, 0.60, 0.58, 0.55, 0.54, 0.53, 0.52, 0.50)  # one source far above the rest
+    background = analyzer._background_score(hits)
+    assert analyzer._is_close(hits[0], background)
+
+
+def test_near_identical_text_always_counts_even_when_several_reports_share_it(analyzer):
+    hits = _hits(0.99, 0.99, 0.99, 0.98, 0.98, 0.97, 0.97, 0.97)
+    assert analyzer._is_close(hits[0], analyzer._background_score(hits))
+
+
+def test_background_counts_each_report_once(analyzer):
+    from app.embeddings.index import Hit
+    from app.embeddings.passages import Passage
+
+    same_report = [Hit(Passage("x", i, "", "other", "t"), 0.9) for i in range(10)]
+    assert analyzer._background_score(same_report) == 0.0  # one report is no background at all

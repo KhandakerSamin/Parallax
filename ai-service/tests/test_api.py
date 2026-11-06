@@ -21,7 +21,7 @@ def engine():
     for document in corpus.documents.values():
         passages = make_passages(document)
         index.add(passages, encoder.encode([p.text for p in passages]))
-    return Engine(Analyzer(index, encoder, corpus, AnalyzerConfig(semantic_threshold=0.6)), set())
+    return Engine(Analyzer(index, encoder, corpus, AnalyzerConfig(semantic_floor=0.6)), set())
 
 
 @pytest.fixture
