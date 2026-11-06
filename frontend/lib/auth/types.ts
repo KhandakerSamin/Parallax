@@ -20,7 +20,16 @@ export type User = {
   universityId: string;
   role: Role;
   department: string;
+  /** Profile photo from Google; absent for password-only accounts. */
+  avatarUrl?: string | null;
+  /** True once the account is linked to a Google account. */
+  googleLinked?: boolean;
 };
+
+/** What a user's university ID is called: students have a student ID, everyone else a staff ID. */
+export function idLabel(role: Role): string {
+  return role === "student" ? "Student ID" : "Staff ID";
+}
 
 export type SignInInput = {
   /** University email or student/staff ID. */
@@ -41,7 +50,7 @@ export type SignUpInput = {
 /** What a first-time Google user adds; name and email come from Google. */
 export type GoogleCompleteInput = Pick<SignUpInput, "universityId" | "role" | "department">;
 
-export type GooglePending = { email: string; name: string };
+export type GooglePending = { email: string; name: string; picture?: string | null };
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 

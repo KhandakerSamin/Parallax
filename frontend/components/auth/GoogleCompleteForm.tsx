@@ -12,10 +12,10 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { UserAvatar } from "@/components/layout/UserAvatar";
 import { getGooglePending } from "@/lib/auth/api";
 import { AuthError, type GooglePending } from "@/lib/auth/types";
 import { googleCompleteSchema, type GoogleCompleteValues } from "@/lib/auth/validation";
-import { initials } from "@/lib/utils";
 import { fieldA11y, FormField } from "./FormField";
 import { DepartmentSelect, RoleField } from "./ProfileFields";
 
@@ -120,12 +120,7 @@ export function GoogleCompleteForm() {
   return (
     <motion.form animate={shake} onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
       <div className="border-border bg-muted/40 flex items-center gap-3 rounded-2xl border p-3.5">
-        <span
-          aria-hidden
-          className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold"
-        >
-          {initials(pending.name)}
-        </span>
+        <UserAvatar name={pending.name} src={pending.picture} className="size-10" />
         <div className="min-w-0">
           <p className="truncate font-medium">{pending.name}</p>
           <p className="text-muted-foreground flex items-center gap-1.5 truncate text-sm">

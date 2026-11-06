@@ -103,6 +103,7 @@ class GoogleCompleteRequest(ProfileFields):
 class GooglePendingResponse(CamelModel):
     email: str
     name: str
+    picture: str | None = None
 
 
 class LoginRequest(CamelModel):
@@ -121,6 +122,8 @@ class UserOut(CamelModel):
     university_id: str
     role: Role
     department: str
+    avatar_url: str | None = None
+    google_linked: bool = False
 
 
 class UserResponse(CamelModel):

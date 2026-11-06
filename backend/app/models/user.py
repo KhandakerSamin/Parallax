@@ -35,6 +35,8 @@ class User(Base):
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Google's stable account ID ("sub"), set once the account is linked to Google.
     google_sub: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
+    # Profile photo from Google, refreshed at each Google sign-in.
+    avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
@@ -44,6 +46,10 @@ class User(Base):
     sessions: Mapped[list["AuthSession"]] = relationship(  # noqa: F821
         back_populates="user", cascade="all, delete-orphan", passive_deletes=True
     )
+
+    @property
+    def google_linked(self) -> bool:
+        return self.google_sub is not None
 
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role.value})>"

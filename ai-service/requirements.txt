@@ -3,6 +3,7 @@ fastapi==0.115.*
 uvicorn[standard]==0.32.*
 pydantic==2.10.*
 python-dotenv==1.1.*
+python-multipart>=0.0.18,<0.1  # file uploads
 
 # NLP & Embeddings
 sentence-transformers==3.4.*

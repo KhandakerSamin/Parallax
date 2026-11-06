@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from app.extraction.preprocessor import (
     clean_text,
     detect_language_hint,
@@ -12,7 +10,6 @@ from app.extraction.preprocessor import (
     remove_control_characters,
     segment_sentences,
 )
-
 
 # ── normalize_whitespace ────────────────────────────────────
 
@@ -44,8 +41,8 @@ class TestNormalizeUnicode:
     def test_nfc_normalization(self):
         # NFC should compose ে + া into the single precomposed form
         # 'ো' (U+09CB) is the composed form of 'ে' (U+09C7) + 'া' (U+09BE)
-        decomposed = "\u09C7\u09BE"  # ে + া
-        composed = "\u09CB"  # ো
+        decomposed = "\u09c7\u09be"  # ে + া
+        composed = "\u09cb"  # ো
         result = normalize_unicode(decomposed)
         assert result == composed
 

@@ -14,9 +14,7 @@ COOKIE = "parallax_session"
 
 
 def login(client, identifier, password=STRONG_PASSWORD, remember=False):
-    return client.post(
-        f"{AUTH}/login", json={"identifier": identifier, "password": password, "remember": remember}
-    )
+    return client.post(f"{AUTH}/login", json={"identifier": identifier, "password": password, "remember": remember})
 
 
 # ----- register -------------------------------------------------------------
@@ -30,7 +28,16 @@ def test_register_creates_user_and_signs_in(client, new_user):
     assert user["email"] == "nusrat@diu.edu.bd"
     assert user["universityId"] == "221-35-123"
     assert user["role"] == "student"
-    assert set(user) == {"id", "name", "email", "universityId", "role", "department"}
+    assert set(user) == {
+        "id",
+        "name",
+        "email",
+        "universityId",
+        "role",
+        "department",
+        "avatarUrl",
+        "googleLinked",
+    }
 
     set_cookie = response.headers["set-cookie"]
     assert f"{COOKIE}=" in set_cookie

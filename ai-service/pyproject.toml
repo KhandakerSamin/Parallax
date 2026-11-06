@@ -7,7 +7,8 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
-ignore = ["E501"]
+# UP017/UP042: keep timezone.utc and (str, Enum) so the code also runs on Python 3.10 locally.
+ignore = ["E501", "UP017", "UP042"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]

@@ -58,7 +58,7 @@ export function SignInForm() {
       animate={shake}
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="space-y-5"
+      className="space-y-4"
       aria-describedby="signin-demo"
     >
       {googleError && (

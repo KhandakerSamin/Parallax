@@ -46,9 +46,7 @@ def remove_control_characters(text: str) -> str:
     Returns:
         Text with control characters removed.
     """
-    return "".join(
-        ch for ch in text if unicodedata.category(ch)[0] != "C" or ch in ("\n", "\t", "\r")
-    )
+    return "".join(ch for ch in text if unicodedata.category(ch)[0] != "C" or ch in ("\n", "\t", "\r"))
 
 
 def clean_text(text: str) -> str:
@@ -108,7 +106,7 @@ def detect_language_hint(text: str) -> str:
     bangla_count = 0
     latin_count = 0
     for ch in text:
-        if "\u0980" <= ch <= "\u09FF":
+        if "\u0980" <= ch <= "\u09ff":
             bangla_count += 1
         elif "A" <= ch <= "Z" or "a" <= ch <= "z":
             latin_count += 1

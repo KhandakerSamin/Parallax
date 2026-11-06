@@ -57,7 +57,9 @@ def _set_temp_cookie(response: Response, name: str, value: str, max_age: int) ->
 
 
 def _clear_temp_cookie(response: Response, name: str) -> None:
-    response.delete_cookie(name, path=_cookie_path(), httponly=True, secure=get_settings().secure_cookies, samesite="lax")
+    response.delete_cookie(
+        name, path=_cookie_path(), httponly=True, secure=get_settings().secure_cookies, samesite="lax"
+    )
 
 
 def _safe_next(value: str | None) -> str:
@@ -116,14 +118,20 @@ def callback(
     if not is_allowed_email(identity.email):
         return _fail("google_domain")
 
-    user = auth_service.find_or_link_google_user(db, sub=identity.sub, email=identity.email)
+    user = auth_service.find_or_link_google_user(db, sub=identity.sub, email=identity.email, picture=identity.picture)
     if user is None:
         if auth_service.find_user_by_identifier(db, identity.email):
             return _fail("google_conflict")  # that email's account is linked to another Google account
         response = RedirectResponse(_frontend("/sign-up/google"), status_code=status.HTTP_302_FOUND)
         _clear_temp_cookie(response, STATE_COOKIE)
         pending = sign(
-            {"sub": identity.sub, "email": identity.email, "name": identity.name, "next": saved["next"]},
+            {
+                "sub": identity.sub,
+                "email": identity.email,
+                "name": identity.name,
+                "picture": identity.picture,
+                "next": saved["next"],
+            },
             purpose="google-signup",
             max_age_seconds=SIGNUP_TTL,
         )
@@ -158,7 +166,7 @@ def pending(request: Request, response: Response) -> GooglePendingResponse:
     """The verified Google name and email waiting to finish sign-up."""
     response.headers["Cache-Control"] = "no-store"
     data = _pending(request)
-    return GooglePendingResponse(email=data["email"], name=data["name"])
+    return GooglePendingResponse(email=data["email"], name=data["name"], picture=data.get("picture"))
 
 
 @router.post(
@@ -179,6 +187,7 @@ def complete(body: GoogleCompleteRequest, request: Request, response: Response, 
             university_id=body.university_id,
             role=body.role,
             department=body.department,
+            picture=data.get("picture"),
         )
     except auth_service.DuplicateAccountError as exc:
         message = (

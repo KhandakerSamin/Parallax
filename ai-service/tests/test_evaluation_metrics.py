@@ -6,7 +6,6 @@ import pytest
 
 from app.evaluation.metrics import classify_pair, f1_score, precision, recall
 
-
 # ── precision ──────────────────────────────────────────────
 
 

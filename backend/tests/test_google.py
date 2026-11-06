@@ -117,7 +117,7 @@ def test_new_person_finishes_sign_up(client, google_on):
     assert location(response) == "/sign-up/google"
 
     pending = client.get(f"{GOOGLE}/pending")
-    assert pending.json() == {"email": "rahim@diu.edu.bd", "name": "Rahim Uddin"}
+    assert pending.json() == {"email": "rahim@diu.edu.bd", "name": "Rahim Uddin", "picture": None}
 
     done = client.post(
         f"{GOOGLE}/complete",
@@ -131,15 +131,53 @@ def test_new_person_finishes_sign_up(client, google_on):
     assert client.get(f"{GOOGLE}/pending").status_code == 401
 
 
+def test_new_account_keeps_the_google_photo(client, google_on):
+    photo = "https://lh3.googleusercontent.com/a/photo=s96-c"
+    google_on["id_token"] = make_id_token(picture=photo)
+    callback(client, start(client)["state"][0])
+    assert client.get(f"{GOOGLE}/pending").json()["picture"] == photo
+
+    client.post(
+        f"{GOOGLE}/complete",
+        json={"universityId": "221-35-456", "role": "student", "department": "Software Engineering"},
+    )
+    user = client.get("/api/v1/auth/me").json()["user"]
+    assert user["avatarUrl"] == photo
+    assert user["googleLinked"] is True
+
+
+def test_linking_refreshes_the_photo(client, registered, google_on):
+    photo = "https://lh3.googleusercontent.com/a/new-photo"
+    google_on["id_token"] = make_id_token(email=registered["email"], picture=photo)
+    callback(client, start(client)["state"][0])
+    user = client.get("/api/v1/auth/me").json()["user"]
+    assert user["avatarUrl"] == photo
+    assert user["googleLinked"] is True
+
+
+def test_password_account_has_no_photo(client, registered):
+    client.post(
+        "/api/v1/auth/login",
+        json={"identifier": registered["email"], "password": registered["password"], "remember": False},
+    )
+    user = client.get("/api/v1/auth/me").json()["user"]
+    assert user["avatarUrl"] is None
+    assert user["googleLinked"] is False
+
+
+@pytest.mark.parametrize("picture", ["http://example.com/a.png", "javascript:alert(1)", 42])
+def test_ignores_unsafe_photo_urls(google_on, picture):
+    identity = google.parse_id_token(make_id_token(picture=picture))
+    assert identity.picture is None
+
+
 def test_google_only_account_cannot_use_password_login(client, google_on):
     callback(client, start(client)["state"][0])
     client.post(
         f"{GOOGLE}/complete",
         json={"universityId": "221-35-456", "role": "student", "department": "Software Engineering"},
     )
-    response = client.post(
-        "/api/v1/auth/login", json={"identifier": "rahim@diu.edu.bd", "password": "Anything#123"}
-    )
+    response = client.post("/api/v1/auth/login", json={"identifier": "rahim@diu.edu.bd", "password": "Anything#123"})
     assert response.status_code == 401
 
 

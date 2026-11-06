@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 import { Building2, FileUp, History, IdCard, LogOut, Mail, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { GoogleMark } from "@/components/auth/GoogleButton";
 import { SignOutDialog } from "@/components/auth/SignOutDialog";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/layout/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ROLE_LABELS } from "@/lib/auth/types";
-import { initials } from "@/lib/utils";
+import { ROLE_LABELS, idLabel } from "@/lib/auth/types";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -43,7 +43,7 @@ export function DashboardView() {
 
   const details = [
     { icon: Mail, label: "Email", value: user.email },
-    { icon: IdCard, label: "Student / Staff ID", value: user.universityId },
+    { icon: IdCard, label: idLabel(user.role), value: user.universityId },
     { icon: Building2, label: "Department", value: user.department },
   ];
 
@@ -62,9 +62,12 @@ export function DashboardView() {
         />
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <Avatar className="size-14">
-              <AvatarFallback className="text-base">{initials(user.name)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              name={user.name}
+              src={user.avatarUrl}
+              className="ring-background size-16 shadow-md ring-4"
+              fallbackClassName="text-lg"
+            />
             <div>
               <h1 id="dash-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 Hello, {user.name.split(" ")[0]}
@@ -72,6 +75,12 @@ export function DashboardView() {
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <Badge variant="brand">{ROLE_LABELS[user.role]}</Badge>
                 <span className="text-muted-foreground text-sm">{user.name}</span>
+                {user.googleLinked && (
+                  <span className="text-muted-foreground border-border inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
+                    <GoogleMark className="size-3" />
+                    Google account
+                  </span>
+                )}
               </div>
             </div>
           </div>
