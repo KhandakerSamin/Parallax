@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import type { ReactNode } from "react";
+import { ScrollRail } from "@/components/layout/ScrollRail";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { MotionProvider } from "@/components/providers/MotionProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <MotionProvider>
             <AuthProvider>
               {children}
+              <ScrollRail />
               <Toaster />
               <IdleLogout />
             </AuthProvider>
