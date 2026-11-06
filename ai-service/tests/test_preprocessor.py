@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from app.extraction.preprocessor import (
     clean_text,
     detect_language_hint,
@@ -12,7 +10,6 @@ from app.extraction.preprocessor import (
     remove_control_characters,
     segment_sentences,
 )
-
 
 # ── normalize_whitespace ────────────────────────────────────
 
