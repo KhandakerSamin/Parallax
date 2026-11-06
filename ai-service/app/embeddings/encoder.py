@@ -13,7 +13,11 @@ from typing import Protocol
 
 import numpy as np
 
-DEFAULT_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+# LaBSE was trained on translation pairs, so a Bangla passage and its English source score
+# close together while two reports that merely share a topic do not. On a labelled sample it
+# separated reuse from same-topic text by a 0.30 cosine margin; paraphrase-multilingual-MiniLM
+# and multilingual-e5 did not separate them at all (docs/semantic-model.md).
+DEFAULT_MODEL = "sentence-transformers/LaBSE"
 
 
 class Encoder(Protocol):
