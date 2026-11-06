@@ -49,8 +49,6 @@ class AnalyzerConfig:
     max_matches: int = 10
     min_score: float = 0.02  # sources below this on every perspective are not reported
     evidence_per_match: int = 12
-    lexical_weight: float = 0.5
-    semantic_weight: float = 0.5
     moderate_level: float = 0.15
     high_level: float = 0.40
 
@@ -184,13 +182,11 @@ class Analyzer:
 
     # ── assembly ──────────────────────────────────────────
 
-    def _overall(self, lexical: float, semantic: float) -> float:
-        cfg = self.config
-        weighted = (cfg.lexical_weight * lexical + cfg.semantic_weight * semantic) / (
-            cfg.lexical_weight + cfg.semantic_weight
-        )
-        # Verbatim reuse should never be averaged away by a lower semantic score.
-        return _round(max(weighted, lexical))
+    @staticmethod
+    def _overall(lexical: float, semantic: float) -> float:
+        # The larger of the two, not an average: a translated report shares no wording
+        # (lexical 0) yet is fully reused, and averaging would halve it.
+        return _round(max(lexical, semantic))
 
     def _match(self, candidate: _Candidate, passages: list[Passage], background: list[float]) -> Match:
         evidence: list[Evidence] = [

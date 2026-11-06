@@ -149,3 +149,8 @@ def test_background_counts_each_report_once(analyzer):
 
     same_report = [Hit(Passage("x", i, "", "other", "t"), 0.9) for i in range(10)]
     assert analyzer._background_score(same_report) == 0.0  # one report is no background at all
+
+
+def test_overall_is_not_halved_when_only_one_perspective_fires():
+    assert Analyzer._overall(lexical=0.0, semantic=0.9) == 0.9  # e.g. a translation
+    assert Analyzer._overall(lexical=0.7, semantic=0.2) == 0.7
