@@ -1,0 +1,80 @@
+{
+ "description": "Hand-labelled passage pairs for choosing the embedding model. A ref is [report id, section title]; the first passage of that section is used. 'reuse' pairs should score high, 'different' pairs low.",
+ "pairs": [
+  {
+   "name": "Bangla translation of an English passage",
+   "label": "reuse",
+   "a": {
+    "text": "মেশিন লার্নিংয়ে ডেটা ভারসাম্যহীনতা একটি সাধারণ সমস্যা, যার ফলে প্রশিক্ষণ ডেটায় কিছু শ্রেণি উল্লেখযোগ্যভাবে উপেক্ষিত হয় এবং মডেলগুলো সংখ্যাগরিষ্ঠ শ্রেণির দিকে পক্ষপাতদুষ্ট হয়ে পড়ে। সংগ্রহে ৭৪৪টি পেপটাইড রয়েছে যেগুলো IL-4 তৈরি করে না এবং ৯৮৫টি পেপটাইড সিকোয়েন্স রয়েছে যেগুলো IL-4 তৈরি করে, যা একটি উল্লেখযোগ্য ভারসাম্যহীনতা সৃষ্টি করে। এই ভারসাম্যহীনতা দূর করতে আমরা পক্ষপাত কমানোর জন্য ADASYN পদ্ধতি ব্যবহার করি। বণ্টন পরীক্ষা করে ADASYN ওভারস্যাম্পলিং কৌশল সংখ্যালঘু শ্রেণির জন্য কৃত্রিম নমুনা তৈরি করে।",
+    "note": "Translated by the Parallax team from the English passage in b."
+   },
+   "b": {
+    "ref": [
+     "14111",
+     "Data Balance"
+    ]
+   }
+  },
+  {
+   "name": "English paraphrase between two peptide-prediction reports",
+   "label": "reuse",
+   "a": {
+    "ref": [
+     "14105",
+     "Data Balance"
+    ]
+   },
+   "b": {
+    "ref": [
+     "14111",
+     "Data Balance"
+    ]
+   }
+  },
+  {
+   "name": "Two ransomware reports introducing the same topic",
+   "label": "different",
+   "a": {
+    "ref": [
+     "17104",
+     "The Escalating Threat of Ransomware"
+    ]
+   },
+   "b": {
+    "ref_prefix": [
+     "17273",
+     "introduction"
+    ]
+   }
+  },
+  {
+   "name": "Bangla passage against an unrelated biomedical abstract",
+   "label": "different",
+   "a": {
+    "text": "মেশিন লার্নিংয়ে ডেটা ভারসাম্যহীনতা একটি সাধারণ সমস্যা, যার ফলে প্রশিক্ষণ ডেটায় কিছু শ্রেণি উল্লেখযোগ্যভাবে উপেক্ষিত হয় এবং মডেলগুলো সংখ্যাগরিষ্ঠ শ্রেণির দিকে পক্ষপাতদুষ্ট হয়ে পড়ে। সংগ্রহে ৭৪৪টি পেপটাইড রয়েছে যেগুলো IL-4 তৈরি করে না এবং ৯৮৫টি পেপটাইড সিকোয়েন্স রয়েছে যেগুলো IL-4 তৈরি করে, যা একটি উল্লেখযোগ্য ভারসাম্যহীনতা সৃষ্টি করে। এই ভারসাম্যহীনতা দূর করতে আমরা পক্ষপাত কমানোর জন্য ADASYN পদ্ধতি ব্যবহার করি। বণ্টন পরীক্ষা করে ADASYN ওভারস্যাম্পলিং কৌশল সংখ্যালঘু শ্রেণির জন্য কৃত্রিম নমুনা তৈরি করে।"
+   },
+   "b": {
+    "ref": [
+     "17151",
+     "Abstract"
+    ]
+   }
+  },
+  {
+   "name": "A report's method passage against its own introduction",
+   "label": "different",
+   "a": {
+    "ref": [
+     "14111",
+     "Data Balance"
+    ]
+   },
+   "b": {
+    "ref": [
+     "14111",
+     "Introduction"
+    ]
+   }
+  }
+ ]
+}
