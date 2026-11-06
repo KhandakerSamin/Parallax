@@ -17,7 +17,7 @@ function useMounted() {
 
 /**
  * Light/dark switch. The knob is a smiling sun on a sky track in light mode and
- * slides over to become a sleepy moon on a starry track in dark mode.
+ * slides over to become a smiling moon on a starry track in dark mode.
  * Visual state comes from the `dark` class (no flash); ARIA state waits for mount.
  */
 export function ThemeToggle({ className }: { className?: string }) {
@@ -91,19 +91,22 @@ function MoonFace({ className }: { className?: string }) {
       <circle cx="18.2" cy="8" r="1.8" fill="#cbd5e1" />
       <circle cx="7.6" cy="17.6" r="1.3" fill="#cbd5e1" />
       <circle cx="17.4" cy="18.2" r="0.9" fill="#cbd5e1" />
-      {/* Sleepy closed eyes */}
+      {/* Happy eyes (upturned arcs), rosy cheeks and a wide smile */}
       <path
-        d="M8.6 12 Q10 13.3 11.4 12 M14.6 12 Q16 13.3 17.4 12"
+        d="M8.5 12.4 Q10 10.7 11.5 12.4 M14.5 12.4 Q16 10.7 17.5 12.4"
         fill="none"
         stroke="#334155"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinecap="round"
       />
+      <circle cx="8.4" cy="15" r="1.2" fill="#f9a8d4" opacity="0.7" />
+      <circle cx="17.6" cy="15" r="1.2" fill="#f9a8d4" opacity="0.7" />
+      <path d="M10.3 14.9 Q13 18.4 15.7 14.9 Z" fill="#334155" />
       <path
-        d="M11.6 15.6 Q13 16.6 14.4 15.6"
+        d="M11.7 16.5 Q13 17.4 14.3 16.5"
         fill="none"
-        stroke="#334155"
-        strokeWidth="1.1"
+        stroke="#fb7185"
+        strokeWidth="0.9"
         strokeLinecap="round"
       />
     </svg>

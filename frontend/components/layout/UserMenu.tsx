@@ -1,10 +1,9 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { ChevronDown, IdCard, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { SignOutDialog } from "@/components/auth/SignOutDialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -14,8 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ROLE_LABELS, type User } from "@/lib/auth/types";
-import { initials } from "@/lib/utils";
+import { ROLE_LABELS, idLabel, type User } from "@/lib/auth/types";
+import { UserAvatar } from "./UserAvatar";
 
 export function UserMenu({ user }: { user: User }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -23,21 +22,34 @@ export function UserMenu({ user }: { user: User }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="ring-offset-background hover:ring-border cursor-pointer rounded-full ring-offset-2 transition-shadow hover:ring-2"
+          className="group border-border/70 bg-card/60 hover:bg-muted data-[state=open]:bg-muted flex cursor-pointer items-center gap-2 rounded-full border p-0.5 transition-colors md:pr-2.5"
           data-testid="user-menu"
         >
           <span className="sr-only">Account menu for {user.name}</span>
-          <Avatar aria-hidden>
-            <AvatarFallback>{initials(user.name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar name={user.name} src={user.avatarUrl} className="size-8" />
+          <span aria-hidden className="hidden max-w-28 truncate text-sm font-medium md:block">
+            {user.name.split(" ")[0]}
+          </span>
+          <ChevronDown
+            aria-hidden
+            className="text-muted-foreground hidden size-3.5 transition-transform group-data-[state=open]:rotate-180 md:block"
+          />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>
-            <p className="truncate text-sm font-semibold">{user.name}</p>
-            <p className="text-muted-foreground truncate text-xs font-normal">{user.email}</p>
-            <Badge variant="brand" className="mt-2">
-              {ROLE_LABELS[user.role]}
-            </Badge>
+        <DropdownMenuContent className="w-64">
+          <DropdownMenuLabel className="flex items-start gap-3">
+            <UserAvatar name={user.name} src={user.avatarUrl} className="size-10" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{user.name}</p>
+              <p className="text-muted-foreground truncate text-xs font-normal">{user.email}</p>
+              <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-xs font-normal">
+                <IdCard className="size-3.5" aria-hidden />
+                {idLabel(user.role)}:{" "}
+                <span className="text-foreground font-mono">{user.universityId}</span>
+              </p>
+              <Badge variant="brand" className="mt-2">
+                {ROLE_LABELS[user.role]}
+              </Badge>
+            </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>

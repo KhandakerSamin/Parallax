@@ -129,6 +129,12 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* The default scrollbar is replaced by <ScrollRail /> on the right edge. */
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   body {
@@ -219,6 +225,14 @@
   background: var(--glass);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+
+/* Scrolls normally but hides the native scrollbar (a ScrollRail shows progress). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @utility bg-grid {
@@ -375,6 +389,41 @@
   animation: twinkle 2.4s ease-in-out 0.8s infinite;
 }
 
+/* Auth brand panel: slow orbit rings and a beam scanning the sample report. */
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.brand-orbit {
+  animation: orbit 40s linear infinite;
+}
+
+.brand-orbit-reverse {
+  animation: orbit 28s linear infinite reverse;
+}
+
+@keyframes scan {
+  0% {
+    top: -3rem;
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.brand-scan {
+  background: linear-gradient(to bottom, transparent, rgb(94 234 212 / 0.14), transparent);
+  animation: scan 4.5s ease-in-out infinite;
+}
+
 @keyframes shimmer {
   to {
     transform: translateX(100%);
@@ -426,8 +475,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aurora-blob {
+  .aurora-blob,
+  .brand-orbit,
+  .brand-orbit-reverse {
     animation: none;
+  }
+
+  .brand-scan {
+    display: none;
   }
 
   .marker {
