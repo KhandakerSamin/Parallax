@@ -116,7 +116,9 @@ def join_lines(lines: list[str]) -> str:
         if not line:
             continue
         if text.endswith("-") and line[:1].islower() and len(text) > 1 and text[-2].isalpha():
-            text = text[:-1] + line
+            last_word = text.rsplit(" ", 1)[-1]
+            # "recog-" + "nition" -> "recognition"; "state-of-the-" + "art" keeps its hyphen.
+            text = text + line if "-" in last_word[:-1] else text[:-1] + line
         else:
             text = f"{text} {line}" if text else line
     return re.sub(r"\s+", " ", text).strip()
