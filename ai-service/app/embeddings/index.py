@@ -63,6 +63,14 @@ class PassageIndex:
             results.append(hits[:k])
         return results
 
+    def stored(self, doc_id: str) -> tuple[list[Passage], np.ndarray] | None:
+        """The indexed passages of a corpus report and their vectors, or None if it is not indexed."""
+        ids = [i for i, p in enumerate(self.passages) if p.doc_id == doc_id]
+        if not ids:
+            return None
+        vectors = np.vstack([self._index.reconstruct(i) for i in ids]).astype(np.float32)
+        return [self.passages[i] for i in ids], vectors
+
     def save(self, directory: str | Path) -> None:
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
