@@ -29,7 +29,7 @@ _LIST_PAGE = re.compile(
     re.IGNORECASE,
 )
 _TOC_LINE = re.compile(r"(\.{3,}|…|\s)\s*(\d{1,3}|[ivx]{1,5})$", re.IGNORECASE)
-_ABSTRACT = re.compile(r"^abstract\s*[:.\-–]?\s*(.*)$", re.IGNORECASE)
+_ABSTRACT = re.compile(r"^abstract\s*[:.\-–—]?\s*(.*)$", re.IGNORECASE)
 
 # ── Headings ────────────────────────────────────────────────
 
@@ -49,7 +49,13 @@ _NAMED = re.compile(
     r"conclusions?( and future (work|scope))?|future (work|scope)|references|bibliography|appendix(es|ices)?\b.*)$",
     re.IGNORECASE,
 )
-_REFERENCES = re.compile(r"^(references|bibliography|works cited|reference list)\s*:?$", re.IGNORECASE)
+_REFERENCES = re.compile(r"^(references?|bibliography|works cited|reference list)\s*:?$", re.IGNORECASE)
+# Plagiarism-checker reports (e.g. Turnitin) that students append: other people's text, not theirs.
+_CHECKER_REPORT = re.compile(
+    r"(originality report|similarity index|primary sources|internet sources|student papers|"
+    r"exclude (quotes|bibliography|matches)|turnitin)",
+    re.IGNORECASE,
+)
 
 SECTION_KINDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("references", ("reference", "bibliograph", "works cited")),
@@ -126,6 +132,10 @@ def _is_toc_page(page: Page) -> bool:
     return numbered_ends / len(lines) >= 0.45
 
 
+def _is_checker_report_page(page: Page) -> bool:
+    return sum(1 for line in page.lines if _CHECKER_REPORT.search(line.text)) >= 2
+
+
 def _is_front_matter_page(page: Page) -> bool:
     return any(_FRONT_MATTER.match(line.text) for line in page.lines[:8])
 
@@ -159,6 +169,8 @@ def match_heading(line: Line, next_line: Line | None, body_size: float) -> tuple
             title, consumed = next_line.text.strip(), True
         return 1, str(number) if number else None, title or f"Chapter {chapter.group(1)}", consumed
 
+    if text[:1].islower():
+        return None  # running text that happens to be styled, e.g. a large-font "reference"
     if _REFERENCES.match(text) or (_NAMED.match(text) and _looks_like_title(line, body_size)):
         return 1, None, text.rstrip(":"), False
 
@@ -221,13 +233,13 @@ def segment(pages: list[Page], body_size: float) -> SegmentedDocument:
     body_start_page: int | None = None
 
     for page in pages:
-        if _is_toc_page(page):
+        if _is_toc_page(page) or _is_checker_report_page(page):
             skipped.append(page.number)
             in_abstract = False
             continue
 
         lines = page.lines
-        if not body_started and _is_front_matter_page(page) and not any(_ABSTRACT.match(x.text) for x in lines[:8]):
+        if not body_started and _is_front_matter_page(page) and not any(_ABSTRACT.match(x.text) for x in lines):
             skipped.append(page.number)
             continue
 
@@ -247,7 +259,8 @@ def segment(pages: list[Page], body_size: float) -> SegmentedDocument:
 
             heading = match_heading(line, next_line, body_size)
             starts_body = heading is not None and (
-                heading[0] == 1 and (heading[1] in ("1", None) and classify_kind(heading[2]) == "introduction" or heading[1] == "1")
+                heading[0] == 1
+                and (heading[1] in ("1", None) and classify_kind(heading[2]) == "introduction" or heading[1] == "1")
             )
             if not body_started:
                 if starts_body:
@@ -273,7 +286,9 @@ def segment(pages: list[Page], body_size: float) -> SegmentedDocument:
                     reference_lines.append(line.text)
                     continue
                 in_references = False
-                sections.append(Section(title=title, kind=classify_kind(title), level=level, number=number, page_start=page.number))
+                sections.append(
+                    Section(title=title, kind=classify_kind(title), level=level, number=number, page_start=page.number)
+                )
                 continue
 
             if in_references:
