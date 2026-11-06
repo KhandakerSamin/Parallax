@@ -25,6 +25,7 @@ import html
 import json
 import re
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -42,11 +43,25 @@ RAW_DIR = REPO_ROOT / "data" / "raw"
 META_FILE = REPO_ROOT / "data" / "metadata" / "corpus.jsonl"
 
 
+RETRIES = 3
+
+
 def fetch(url: str, delay: float) -> bytes:
-    time.sleep(delay)
+    """GET with a polite delay. Dropped connections and server errors are retried
+    with a growing back-off (delay × 4, × 8); a 404 is not retried."""
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+    for attempt in range(RETRIES):
+        time.sleep(delay * (2 ** (attempt + 1) if attempt else 1))
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return resp.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code < 500 or attempt == RETRIES - 1:
+                raise
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            if attempt == RETRIES - 1:
+                raise
+    raise RuntimeError("unreachable")
 
 
 def browse_item_handles(community: str, offset: int, rpp: int, delay: float) -> list[str]:
