@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Building2, FileUp, History, IdCard, LogOut, Mail, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GoogleMark } from "@/components/auth/GoogleButton";
@@ -107,7 +108,7 @@ export function DashboardView() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.08, ease: EASE }}
-          className="border-input bg-card/60 rounded-3xl border border-dashed p-6 sm:p-8"
+          className="border-border bg-card rounded-3xl border p-6 sm:p-8"
         >
           <span className="bg-semantic-soft text-brand grid size-11 place-items-center rounded-xl">
             <FileUp className="size-5" aria-hidden />
@@ -116,7 +117,12 @@ export function DashboardView() {
           <p className="text-muted-foreground mt-1.5 text-sm">
             Upload a proposal or report and Parallax will search the DIU corpus for similar work.
           </p>
-          <Badge className="mt-5">Coming soon</Badge>
+          <Button asChild className="mt-5">
+            <Link href="/dashboard/analyze">
+              <FileUp aria-hidden />
+              Start an analysis
+            </Link>
+          </Button>
         </motion.section>
 
         <motion.section
