@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
 
+    # ----- Similarity analysis (the separate AI service) -----
+    ai_service_url: str = "http://localhost:8001"
+    # A long report takes ~25 s on a laptop CPU, plus ~10 s to load the model the first time.
+    ai_timeout_seconds: float = 180.0
+    max_upload_mb: int = 25
+
     @field_validator("database_url")
     @classmethod
     def _normalise_postgres_scheme(cls, value: str) -> str:
