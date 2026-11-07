@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: "/api/v1/:path*", destination: `${BACKEND_URL}/api/v1/:path*` }];
   },
+  experimental: {
+    // Analysing a full report can take 30+ seconds; don't cut the proxied request off.
+    proxyTimeout: 180_000,
+  },
   turbopack: {
     // Tailwind CSS v4 runs as a Turbopack loader on every stylesheet.
     rules: {
