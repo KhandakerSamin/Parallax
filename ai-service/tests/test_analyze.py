@@ -154,3 +154,27 @@ def test_background_counts_each_report_once(analyzer):
 def test_overall_is_not_halved_when_only_one_perspective_fires():
     assert Analyzer._overall(lexical=0.0, semantic=0.9) == 0.9  # e.g. a translation
     assert Analyzer._overall(lexical=0.7, semantic=0.2) == 0.7
+
+
+def test_matches_carry_concept_structure_and_hybrid(analyzer):
+    result = analyzer.analyze(report("new", SURGERY))
+    top = result.matches[0]
+    assert top.scores.concept > 0.5
+    assert top.scores.structural > 0.5  # same "Methodology" outline
+    assert top.shared_terms
+    assert top.shared_headings[0].source == "Methodology"
+    weights = result.weights
+    expected = sum(weights[k] * getattr(top.scores, k) for k in ("lexical", "semantic", "concept", "structural"))
+    assert abs(top.hybrid - expected) < 1e-3
+    assert result.summary.hybrid == top.hybrid
+
+
+def test_concept_and_structure_alone_do_not_list_a_source(analyzer):
+    # Same topic words and outline as the surgery report, but no reused text.
+    own = (
+        "Surgical phase recognition remains hard because operating rooms differ between hospitals in Dhaka. "
+        "We plan interviews with surgeons about which phases matter most for training junior doctors. "
+        "No video was recorded and no network was trained in this proposal stage of the work. "
+    )
+    result = analyzer.analyze(report("new", own))
+    assert all(m.overall >= analyzer.config.min_score for m in result.matches)
