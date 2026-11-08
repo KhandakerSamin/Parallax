@@ -11,13 +11,19 @@
    stand out, while reworded or translated text has one source far above the rest.
 4. Lexical score: the share of the report's words that sit in sentences reusing
    the source's wording (word-shingle overlap), computed for the strongest candidates.
-5. Keep sources whose evidence clears the bar, best first, with the passages side by side.
+5. Concept and structural scores for the same candidates: shared key terms
+   (TF-IDF) and a shared heading outline, both weighted so the DIU template and
+   common vocabulary count for little.
+6. Keep sources whose text reuse clears the bar, best first, with the passages side
+   by side. Concept and structure add context and feed the hybrid score; they
+   never put a report on the list by themselves, because sharing a topic or a
+   chapter plan is normal.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.embeddings.encoder import Encoder
 from app.embeddings.index import Hit, PassageIndex
@@ -28,12 +34,19 @@ from app.models.analysis import (
     DocumentInfo,
     Evidence,
     Excerpt,
+    HeadingPair,
     Match,
     PerspectiveScores,
     SourceInfo,
 )
 from app.services.corpus import Corpus
+from app.similarity.concept import ConceptModel, ConceptProfile
 from app.similarity.lexical import SentenceMatch, ShingleMatcher, words
+from app.similarity.structural import StructureModel
+
+# Weights of the hybrid score (they sum to 1). Semantic leads because it also
+# catches reworded and translated text.
+DEFAULT_WEIGHTS = {"lexical": 0.2, "semantic": 0.35, "concept": 0.25, "structural": 0.2}
 
 
 @dataclass(frozen=True)
@@ -51,6 +64,7 @@ class AnalyzerConfig:
     evidence_per_match: int = 12
     moderate_level: float = 0.15
     high_level: float = 0.40
+    weights: dict[str, float] = field(default_factory=lambda: dict(DEFAULT_WEIGHTS))
 
 
 @dataclass
@@ -60,6 +74,10 @@ class _Candidate:
     semantic: float = 0.0
     lexical: float = 0.0
     sentence_matches: list[tuple[str, SentenceMatch]] | None = None  # (submitted section, match)
+    concept: float = 0.0
+    shared_terms: list[str] = field(default_factory=list)
+    structural: float = 0.0
+    shared_headings: list[HeadingPair] = field(default_factory=list)
 
 
 def _round(value: float) -> float:
@@ -74,6 +92,9 @@ class Analyzer:
         self.encoder = encoder
         self.corpus = corpus
         self.config = config or AnalyzerConfig()
+        documents = list(corpus.documents.values())
+        self.concepts = ConceptModel(documents)
+        self.structure = StructureModel(documents)
 
     def analyze(self, document: dict) -> AnalysisResult:
         cfg = self.config
@@ -97,15 +118,17 @@ class Analyzer:
         candidates = self._semantic_candidates(passages, hits_per_passage, background, total_words)
         shortlist = sorted(candidates.values(), key=lambda c: self._semantic_strength(c), reverse=True)
         shortlist = shortlist[: cfg.shortlist]
+        profile = self.concepts.profile(document)
         for candidate in shortlist:
             self._score_lexical(candidate, parts, total_words)
+            self._score_context(candidate, document, profile)
 
         matches = [
             self._match(candidate, passages, background)
             for candidate in shortlist
             if max(candidate.lexical, candidate.semantic) >= cfg.min_score
         ]
-        matches.sort(key=lambda m: m.overall, reverse=True)
+        matches.sort(key=lambda m: (m.overall, m.hybrid), reverse=True)
         matches = matches[: cfg.max_matches]
 
         summary = self._summary(matches, shortlist, passages, background, total_words)
@@ -121,6 +144,7 @@ class Analyzer:
             summary=summary,
             matches=matches,
             corpus={"documents": len(self.index.doc_ids), "passages": len(self.index), "encoder": self.encoder.name},
+            weights=dict(cfg.weights),
             notes=notes,
         )
 
@@ -180,6 +204,26 @@ class Analyzer:
         reused = sum(len(words(m.query)) * m.overlap for _, m in found)
         candidate.lexical = _round(reused / total_words) if total_words else 0.0
 
+    # ── concept and structure ─────────────────────────────
+
+    def _score_context(self, candidate: _Candidate, document: dict, profile: ConceptProfile) -> None:
+        source_profile = self.concepts.profiles.get(candidate.doc_id)
+        if source_profile is not None:
+            concept = self.concepts.compare(profile, source_profile)
+            candidate.concept, candidate.shared_terms = concept.score, concept.shared
+        structure = self.structure.compare(document, candidate.doc_id)
+        candidate.structural = structure.score
+        candidate.shared_headings = [HeadingPair(submitted=p.submitted, source=p.source) for p in structure.aligned]
+
+    def _hybrid(self, candidate: _Candidate) -> float:
+        w = self.config.weights
+        return _round(
+            w["lexical"] * candidate.lexical
+            + w["semantic"] * candidate.semantic
+            + w["concept"] * candidate.concept
+            + w["structural"] * candidate.structural
+        )
+
     # ── assembly ──────────────────────────────────────────
 
     @staticmethod
@@ -217,8 +261,16 @@ class Analyzer:
         return Match(
             source=SourceInfo(**self.corpus.meta(candidate.doc_id)),
             overall=self._overall(candidate.lexical, candidate.semantic),
-            scores=PerspectiveScores(lexical=candidate.lexical, semantic=candidate.semantic),
+            hybrid=self._hybrid(candidate),
+            scores=PerspectiveScores(
+                lexical=candidate.lexical,
+                semantic=candidate.semantic,
+                concept=candidate.concept,
+                structural=candidate.structural,
+            ),
             evidence=evidence[: self.config.evidence_per_match],
+            shared_terms=candidate.shared_terms,
+            shared_headings=candidate.shared_headings,
         )
 
     def _summary(
@@ -245,4 +297,5 @@ class Analyzer:
             lexical_coverage=_round(lexical / total_words) if total_words else 0.0,
             semantic_coverage=_round(semantic / total_words) if total_words else 0.0,
             level=level,
+            hybrid=max((m.hybrid for m in matches), default=0.0),
         )
