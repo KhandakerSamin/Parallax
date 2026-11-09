@@ -69,3 +69,7 @@ desktop.ini
 
 # Vercel CLI project links
 .vercel
+
+# Extra index builds and overnight harvest logs
+data/embeddings-*/
+data/*.err
