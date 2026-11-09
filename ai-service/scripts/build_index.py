@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.config import settings  # noqa: E402
 from app.embeddings.encoder import DEFAULT_MODEL, HashingEncoder, SentenceEncoder  # noqa: E402
-from app.embeddings.index import PassageIndex  # noqa: E402
+from app.embeddings.index import PRECISIONS, PassageIndex  # noqa: E402
 from app.embeddings.passages import make_passages  # noqa: E402
 from app.services.corpus import Corpus  # noqa: E402
 
@@ -73,6 +73,7 @@ def main() -> int:
     parser.add_argument("--encoder", choices=["sentence", "hashing"], default="sentence")
     parser.add_argument("--model", default=settings.embedding_model or DEFAULT_MODEL)
     parser.add_argument("--out", type=Path, default=settings.index_dir)
+    parser.add_argument("--precision", choices=PRECISIONS, default="float16")
     args = parser.parse_args()
 
     started = time.time()
@@ -86,7 +87,7 @@ def main() -> int:
     encoder = HashingEncoder() if args.encoder == "hashing" else SentenceEncoder(args.model)
     partial = args.out.with_name(args.out.name + "-partial")
     vectors = encode_resumable(encoder, [p.text for p in passages], partial)
-    index = PassageIndex(encoder.dim, encoder.name)
+    index = PassageIndex(encoder.dim, encoder.name, args.precision)
     index.add(passages, vectors)
     index.save(args.out)
     shutil.rmtree(partial, ignore_errors=True)

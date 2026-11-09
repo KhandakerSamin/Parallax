@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pytest
 
@@ -134,5 +135,38 @@ def test_stored_returns_a_reports_passages_and_vectors(index):
     built, encoder = index
     passages, vectors = built.stored("b")
     assert [p.doc_id for p in passages] == ["b"]
-    assert np.allclose(vectors, encoder.encode([passages[0].text]))
+    assert np.allclose(vectors, encoder.encode([passages[0].text]), atol=1e-3)  # stored as float16
     assert built.stored("missing") is None
+
+
+def test_float32_index_converts_to_float16_with_the_same_results(tmp_path):
+    encoder = HashingEncoder()
+    texts = ["Face detection in classroom video.", "Blood donors near hospitals.", "Rice leaf disease images."]
+    passages = [Passage(str(i), 0, "Abstract", "abstract", t) for i, t in enumerate(texts)]
+    built = PassageIndex(encoder.dim, encoder.name, precision="float32")
+    built.add(passages, encoder.encode(texts))
+    query = encoder.encode(["blood donors"])
+    before = built.search(query, k=3)[0]
+    built.convert("float16")
+    after = built.search(query, k=3)[0]
+    assert built.precision == "float16"
+    assert [h.passage.doc_id for h in after] == [h.passage.doc_id for h in before]
+    assert all(abs(a.score - b.score) < 1e-3 for a, b in zip(after, before, strict=True))
+    built.save(tmp_path)
+    assert PassageIndex.load(tmp_path).precision == "float16"
+
+
+def test_an_index_saved_before_precision_existed_loads_as_float32(index, tmp_path):
+    built, _ = index
+    built.convert("float32")
+    built.save(tmp_path)
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    del manifest["precision"]
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert PassageIndex.load(tmp_path).precision == "float32"
+
+
+def test_unknown_precision_is_rejected():
+    with pytest.raises(ValueError):
+        PassageIndex(8, "test", precision="int4")
+
