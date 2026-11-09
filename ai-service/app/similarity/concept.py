@@ -93,13 +93,15 @@ class ConceptModel:
     ) -> None:
         self.key_terms = key_terms
         self.profiles: dict[str, ConceptProfile] = {}
-        counts: dict[str, Counter[str]] = {}
+        if iter(documents) is documents:  # a one-shot iterator: keep it, since it is read twice
+            documents = list(documents)
+        # Two passes, so the term counts of every report are never held at once
+        # (with ~2,000 reports that alone would be about a gigabyte).
         df: Counter[str] = Counter()
+        self.size = 0
         for document in documents:
-            doc_counts = terms(document_text(document))
-            counts[str(document["doc_id"])] = doc_counts
-            df.update(doc_counts.keys())
-        self.size = len(counts)
+            df.update(terms(document_text(document)).keys())
+            self.size += 1
         cap = max_document_share * self.size
         # Terms used by too many reports are generic; terms seen once may be typos or names.
         # A tiny corpus (tests, early setups) keeps everything so there is something to compare.
@@ -108,8 +110,9 @@ class ConceptModel:
             for term, n in df.items()
             if self.size < 10 or (min_documents <= n <= cap)
         }
-        for doc_id, doc_counts in counts.items():
-            self.profiles[doc_id] = self.profile_from_counts(doc_counts)
+        del df
+        for document in documents:
+            self.profiles[str(document["doc_id"])] = self.profile_from_counts(terms(document_text(document)))
 
     def profile_from_counts(self, counts: Counter[str]) -> ConceptProfile:
         scored = {term: (1.0 + math.log(count)) * self.idf[term] for term, count in counts.items() if term in self.idf}
