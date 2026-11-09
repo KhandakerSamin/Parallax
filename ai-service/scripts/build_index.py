@@ -32,7 +32,7 @@ def main() -> int:
 
     started = time.time()
     corpus = Corpus.load(settings.processed_dir)
-    passages = [p for doc in corpus.documents.values() for p in make_passages(doc)]
+    passages = [p for doc in corpus for p in make_passages(doc)]
     if not passages:
         print(f"No passages: run scripts/extract_corpus.py first (looked in {settings.processed_dir}).")
         return 1

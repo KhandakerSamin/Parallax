@@ -92,9 +92,9 @@ class Analyzer:
         self.encoder = encoder
         self.corpus = corpus
         self.config = config or AnalyzerConfig()
-        documents = list(corpus.documents.values())
-        self.concepts = ConceptModel(documents)
-        self.structure = StructureModel(documents)
+        # The corpus streams its reports from disk, so neither model holds every full text.
+        self.concepts = ConceptModel(corpus)
+        self.structure = StructureModel(corpus)
 
     def analyze(self, document: dict) -> AnalysisResult:
         cfg = self.config

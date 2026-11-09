@@ -44,7 +44,7 @@ def main() -> int:
     analyzer = engine.analyzer
     overrides = {"semantic_floor": args.floor, "semantic_standout": args.standout}
     analyzer.config = replace(analyzer.config, **{k: v for k, v in overrides.items() if v is not None})
-    doc_ids = sorted(analyzer.corpus.documents)[: args.limit]
+    doc_ids = analyzer.corpus.ids()[: args.limit]
 
     started = time.time()
     rows = []
