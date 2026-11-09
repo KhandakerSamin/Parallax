@@ -34,3 +34,10 @@ def test_load_keeps_only_metadata_and_reads_text_on_demand(tmp_path):
     assert [d["doc_id"] for d in corpus] == [d["doc_id"] for d in corpus] == ["7"]  # re-iterable
     assert Corpus.load(tmp_path, in_memory=True).documents["7"] == report
 
+
+def test_load_skips_listed_duplicates_unless_asked(tmp_path):
+    for doc_id in ("1", "2"):
+        (tmp_path / f"{doc_id}.json").write_text(json.dumps({"doc_id": doc_id, "meta": {}}), encoding="utf-8")
+    (tmp_path / "_duplicates.json").write_text(json.dumps({"2": "1"}), encoding="utf-8")
+    assert Corpus.load(tmp_path).ids() == ["1"]
+    assert Corpus.load(tmp_path, skip_duplicates=False).ids() == ["1", "2"]

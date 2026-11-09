@@ -170,3 +170,13 @@ def test_unknown_precision_is_rejected():
     with pytest.raises(ValueError):
         PassageIndex(8, "test", precision="int4")
 
+
+def test_drop_removes_a_reports_passages_and_keeps_the_rest_searchable(index):
+    built, encoder = index
+    assert built.drop({"b"}) == 1
+    assert built.doc_ids == {"a", "c"} and built._index.ntotal == 2
+    [hits] = built.search(encoder.encode(["rice leaf disease"]), k=2)
+    assert hits[0].passage.doc_id == "c"
+    passages, _ = built.stored("c")
+    assert passages[0].doc_id == "c"
+    assert built.drop({"missing"}) == 0

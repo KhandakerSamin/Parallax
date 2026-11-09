@@ -88,6 +88,14 @@ class PassageIndex:
             converted.add(self._index.reconstruct_n(start, min(batch, self._index.ntotal - start)))
         self._index, self.precision = converted, precision
 
+    def drop(self, doc_ids: set[str]) -> int:
+        """Remove every passage of the given reports; returns how many passages went."""
+        positions = np.array([i for i, p in enumerate(self.passages) if p.doc_id in doc_ids], dtype=np.int64)
+        if len(positions):
+            self._index.remove_ids(faiss.IDSelectorBatch(positions))  # keeps the order of the rest
+            self.passages = [p for p in self.passages if p.doc_id not in doc_ids]
+        return len(positions)
+
     def stored(self, doc_id: str) -> tuple[list[Passage], np.ndarray] | None:
         """The indexed passages of a corpus report and their vectors, or None if it is not indexed."""
         ids = [i for i, p in enumerate(self.passages) if p.doc_id == doc_id]
