@@ -2,6 +2,7 @@
 
     python scripts/scan_corpus.py                        # default thresholds
     python scripts/scan_corpus.py --floor 0.75 --standout 0.15 --limit 50
+    python scripts/scan_corpus.py --sample 400           # a random 400 (the corpus is large)
 
 Prints the score distribution and the strongest pairs, and writes every report's
 top matches to data/processed/_scan.json (git-ignored). Used to calibrate the
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import statistics
 import sys
 import time
@@ -37,6 +39,8 @@ def main() -> int:
     parser.add_argument("--floor", type=float, help="override the semantic floor")
     parser.add_argument("--standout", type=float, help="override the semantic standout")
     parser.add_argument("--limit", type=int, help="scan only the first N reports")
+    parser.add_argument("--sample", type=int, help="scan N reports picked at random (repeatable with --seed)")
+    parser.add_argument("--seed", type=int, default=331)
     parser.add_argument("--top", type=int, default=15, help="pairs to print")
     args = parser.parse_args()
 
@@ -44,7 +48,10 @@ def main() -> int:
     analyzer = engine.analyzer
     overrides = {"semantic_floor": args.floor, "semantic_standout": args.standout}
     analyzer.config = replace(analyzer.config, **{k: v for k, v in overrides.items() if v is not None})
-    doc_ids = sorted(analyzer.corpus.documents)[: args.limit]
+    doc_ids = analyzer.corpus.ids()
+    if args.sample:
+        doc_ids = sorted(random.Random(args.seed).sample(doc_ids, min(args.sample, len(doc_ids))))
+    doc_ids = doc_ids[: args.limit]
 
     started = time.time()
     rows = []

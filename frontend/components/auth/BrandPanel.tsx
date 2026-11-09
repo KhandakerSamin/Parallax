@@ -15,7 +15,7 @@ import { LogoMark } from "@/components/layout/Logo";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AUTH_HIGHLIGHTS, PERSPECTIVES, SITE } from "@/lib/constants/content";
 
-const BAR_COLORS = ["#fbbf24", "#a5b4fc", "#5eead4", "#fda4af"];
+const BAR_COLORS = ["var(--bp-bar-1)", "var(--bp-bar-2)", "var(--bp-bar-3)", "var(--bp-bar-4)"];
 
 /** Sample reports the preview cycles through, one per highlight. Illustrative only. */
 const SAMPLES = [
@@ -116,16 +116,16 @@ export function BrandPanel() {
     <div
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="relative isolate hidden overflow-hidden bg-[#0b0f1a] text-white lg:flex lg:h-dvh lg:flex-col lg:justify-between lg:p-12"
+      className="brand-panel relative isolate hidden overflow-hidden bg-[var(--bp-bg)] text-[var(--bp-fg)] transition-colors duration-500 lg:flex lg:h-dvh lg:flex-col lg:justify-between lg:p-12"
     >
       {/* Gradient mesh */}
       <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="aurora-blob absolute -top-32 -left-24 size-[30rem] rounded-full bg-[#4f46e5] opacity-50 blur-[110px]" />
+        <div className="aurora-blob absolute -top-32 -left-24 size-[30rem] rounded-full bg-[#4f46e5] [opacity:var(--bp-blob-a)] blur-[110px]" />
         <div
-          className="aurora-blob absolute -right-24 bottom-0 size-[28rem] rounded-full bg-[#14b8a6] opacity-35 blur-[110px]"
+          className="aurora-blob absolute -right-24 bottom-0 size-[28rem] rounded-full bg-[#14b8a6] [opacity:var(--bp-blob-b)] blur-[110px]"
           style={{ animationDelay: "-8s" }}
         />
-        <div className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_80%)] opacity-40 [--grid-line:rgb(255_255_255/0.06)]" />
+        <div className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_80%)] opacity-40 [--grid-line:var(--bp-grid)]" />
       </div>
 
       <div className="flex items-center gap-2.5">
@@ -139,11 +139,11 @@ export function BrandPanel() {
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[26rem] -translate-x-1/2 -translate-y-1/2"
         >
-          <div className="brand-orbit absolute inset-0 rounded-full border border-dashed border-white/10">
-            <span className="absolute -top-1 left-1/2 size-2 rounded-full bg-[#a5b4fc] shadow-[0_0_12px_#a5b4fc]" />
+          <div className="brand-orbit absolute inset-0 rounded-full border border-dashed border-[var(--bp-line)]">
+            <span className="absolute -top-1 left-1/2 size-2 rounded-full bg-[var(--bp-accent-a)] shadow-[0_0_12px_var(--bp-accent-a)]" />
           </div>
-          <div className="brand-orbit-reverse absolute inset-12 rounded-full border border-white/[0.07]">
-            <span className="absolute top-1/2 -right-1 size-1.5 rounded-full bg-[#5eead4] shadow-[0_0_10px_#5eead4]" />
+          <div className="brand-orbit-reverse absolute inset-12 rounded-full border border-[var(--bp-line)]">
+            <span className="absolute top-1/2 -right-1 size-1.5 rounded-full bg-[var(--bp-accent-b)] shadow-[0_0_10px_var(--bp-accent-b)]" />
           </div>
         </div>
 
@@ -158,8 +158,8 @@ export function BrandPanel() {
             reduced={reduced}
             className="absolute top-0 right-0 w-64"
           >
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
-              <p className="text-xs text-white/60">Top match</p>
+            <div className="rounded-2xl border border-[var(--bp-line)] bg-[var(--bp-card)] p-4 backdrop-blur-md">
+              <p className="text-xs text-[var(--bp-muted)]">Top match</p>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={sample.title}
@@ -169,10 +169,12 @@ export function BrandPanel() {
                   transition={{ duration: 0.35 }}
                 >
                   <p className="mt-1 flex items-center gap-2 text-sm font-medium">
-                    <FileText className="size-4 text-[#a5b4fc]" />
+                    <FileText className="size-4 text-[var(--bp-accent-a)]" />
                     {sample.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-white/60">{sample.year} · Project Report</p>
+                  <p className="mt-0.5 text-xs text-[var(--bp-muted)]">
+                    {sample.year} · Project Report
+                  </p>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -185,22 +187,22 @@ export function BrandPanel() {
             reduced={reduced}
             className="absolute top-24 left-0 w-72"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-md">
+            <div className="relative overflow-hidden rounded-2xl border border-[var(--bp-line)] bg-[var(--bp-card-strong)] p-5 shadow-2xl backdrop-blur-md">
               <span
                 aria-hidden
                 className="brand-scan pointer-events-none absolute inset-x-0 h-12"
               />
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">Similarity report</p>
-                <span className="rounded-full bg-[#14b8a6]/20 px-2 py-0.5 text-[10px] text-[#5eead4]">
+                <span className="rounded-full bg-[var(--bp-accent-b-soft)] px-2 py-0.5 text-[10px] text-[var(--bp-accent-b)]">
                   Sample
                 </span>
               </div>
               <div className="mt-4 space-y-2.5">
                 {PERSPECTIVES.map((p, i) => (
                   <div key={p.key} className="flex items-center gap-2 text-xs">
-                    <span className="w-16 text-white/70">{p.name}</span>
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                    <span className="w-16 text-[var(--bp-muted)]">{p.name}</span>
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bp-track)]">
                       <motion.div
                         className="h-full rounded-full"
                         style={{ background: BAR_COLORS[i] }}
@@ -213,7 +215,7 @@ export function BrandPanel() {
                         }
                       />
                     </div>
-                    <span className="w-7 text-right text-white/60 tabular-nums">
+                    <span className="w-7 text-right text-[var(--bp-muted)] tabular-nums">
                       {sample.bars[i]}
                     </span>
                   </div>
@@ -229,8 +231,8 @@ export function BrandPanel() {
             reduced={reduced}
             className="absolute right-6 bottom-0"
           >
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 shadow-[0_0_40px_-12px_#5eead4] backdrop-blur-md">
-              <p className="text-xs text-white/60">Hybrid score</p>
+            <div className="rounded-2xl border border-[var(--bp-line)] bg-[var(--bp-card)] px-4 py-3 shadow-[0_0_40px_-12px_var(--bp-accent-b)] backdrop-blur-md">
+              <p className="text-xs text-[var(--bp-muted)]">Hybrid score</p>
               <p className="text-2xl font-semibold tabular-nums">
                 <AnimatedScore value={sample.hybrid} reduced={reduced} />
               </p>
@@ -250,7 +252,10 @@ export function BrandPanel() {
               transition={{ duration: 0.45 }}
               className="flex items-start gap-3 text-xl leading-snug font-medium text-balance"
             >
-              <highlight.icon className="mt-1 size-5 shrink-0 text-[#5eead4]" aria-hidden />
+              <highlight.icon
+                className="mt-1 size-5 shrink-0 text-[var(--bp-accent-b)]"
+                aria-hidden
+              />
               {highlight.text}
             </motion.p>
           </AnimatePresence>
@@ -259,11 +264,11 @@ export function BrandPanel() {
           {AUTH_HIGHLIGHTS.map((h, i) => (
             <span
               key={h.text}
-              className={`h-1 rounded-full transition-all duration-500 ${i === index ? "w-8 bg-white" : "w-3 bg-white/30"}`}
+              className={`h-1 rounded-full transition-all duration-500 ${i === index ? "w-8 bg-[var(--bp-fg)]" : "w-3 bg-[var(--bp-track-strong)]"}`}
             />
           ))}
         </div>
-        <p className="mt-8 text-xs text-white/55">
+        <p className="mt-8 text-xs text-[var(--bp-muted)]">
           {SITE.course} · {SITE.university}
         </p>
       </div>
