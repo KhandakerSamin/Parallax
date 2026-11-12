@@ -44,7 +44,7 @@ def test_text_is_forwarded_and_the_result_returned(signed_in, ai):
     response = signed_in.post(f"{ANALYSIS}/text", json={"text": TEXT, "title": "My report"})
 
     assert response.status_code == 200
-    assert response.json() == RESULT
+    assert response.json() == {**RESULT, "report_id": response.json()["report_id"]}
     url, kwargs = ai["calls"][0]
     assert url == "http://localhost:8001/analyze/text"
     assert kwargs["json"] == {"text": TEXT, "title": "My report"}
