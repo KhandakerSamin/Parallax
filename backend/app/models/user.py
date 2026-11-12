@@ -16,6 +16,9 @@ class Role(str, enum.Enum):  # noqa: UP042 (StrEnum needs Python 3.11)
     super_admin = "super_admin"
 
 
+# Roles that may see every report and record review decisions.
+REVIEWER_ROLES = (Role.reviewer, Role.admin, Role.super_admin)
+
 # Roles a person may pick when registering; the others are granted by an admin.
 SELF_SIGNUP_ROLES = (Role.student, Role.reviewer)
 
@@ -45,6 +48,9 @@ class User(Base):
 
     sessions: Mapped[list["AuthSession"]] = relationship(  # noqa: F821
         back_populates="user", cascade="all, delete-orphan", passive_deletes=True
+    )
+    reports: Mapped[list["Report"]] = relationship(  # noqa: F821
+        back_populates="user", cascade="all, delete-orphan", passive_deletes=True, foreign_keys="Report.user_id"
     )
 
     @property
