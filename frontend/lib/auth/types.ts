@@ -26,6 +26,14 @@ export type User = {
   googleLinked?: boolean;
 };
 
+/** Roles that review reports, and roles that administer the system (mirrors the backend). */
+export const REVIEWER_ROLES: readonly Role[] = ["reviewer", "admin", "super_admin"];
+export const ADMIN_ROLES: readonly Role[] = ["admin", "super_admin"];
+
+export const isReviewer = (role: Role | null | undefined) =>
+  !!role && REVIEWER_ROLES.includes(role);
+export const isAdmin = (role: Role | null | undefined) => !!role && ADMIN_ROLES.includes(role);
+
 /** What a user's university ID is called: students have a student ID, everyone else a staff ID. */
 export function idLabel(role: Role): string {
   return role === "student" ? "Student ID" : "Staff ID";
