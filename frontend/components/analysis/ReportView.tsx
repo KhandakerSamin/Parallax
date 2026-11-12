@@ -9,11 +9,15 @@ import {
   FileSearch,
   Languages,
   Layers,
+  Lightbulb,
+  ListTree,
+  Printer,
   RotateCcw,
   ShieldCheck,
   Type,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Evidence, Match, SavedAnalysis, SimilarityLevel } from "@/lib/analysis/types";
@@ -176,8 +180,78 @@ function EvidenceRow({ evidence, sourceTitle }: { evidence: Evidence; sourceTitl
   );
 }
 
-function MatchCard({ match, rank }: { match: Match; rank: number }) {
-  const [open, setOpen] = useState(rank === 1);
+/** Shared key terms and shared headings: why the concept and structure scores are what they are. */
+function ContextEvidence({ match }: { match: Match }) {
+  const terms = match.shared_terms ?? [];
+  const headings = match.shared_headings ?? [];
+  if (terms.length === 0 && headings.length === 0) return null;
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {terms.length > 0 && (
+        <div className="border-border rounded-2xl border p-4">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <Lightbulb className="text-concept size-4" aria-hidden />
+            Shared key concepts
+            <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+              {pct(match.scores.concept ?? 0)}
+            </span>
+          </p>
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {terms.map((term) => (
+              <li
+                key={term}
+                className="bg-concept-soft text-concept rounded-full px-2.5 py-1 text-xs"
+              >
+                {term}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {headings.length > 0 && (
+        <div className="border-border rounded-2xl border p-4">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <ListTree className="text-structural size-4" aria-hidden />
+            Headings in the same order
+            <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+              {pct(match.scores.structural ?? 0)}
+            </span>
+          </p>
+          <ol className="mt-3 space-y-1.5 text-xs">
+            {headings.slice(0, 6).map((h, i) => (
+              <li
+                key={`${h.source}-${i}`}
+                className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"
+              >
+                <span className="truncate" title={h.submitted}>
+                  {h.submitted}
+                </span>
+                <span className="text-muted-foreground" aria-label="matches">
+                  ↔
+                </span>
+                <span className="text-muted-foreground truncate" title={h.source}>
+                  {h.source}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MatchCard({
+  match,
+  rank,
+  forceOpen = false,
+}: {
+  match: Match;
+  rank: number;
+  forceOpen?: boolean;
+}) {
+  const [userOpen, setOpen] = useState(rank === 1);
+  const open = userOpen || forceOpen;
   const { source } = match;
   const meta = [source.authors.slice(0, 3).join(", "), source.year, source.type].filter(Boolean);
   const panelId = `match-${source.id}`;
@@ -193,6 +267,7 @@ function MatchCard({ match, rank }: { match: Match; rank: number }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
+        disabled={forceOpen}
         aria-controls={panelId}
         className="hover:bg-muted/40 flex w-full items-start gap-4 p-4 text-left transition-colors sm:p-5"
       >
@@ -204,10 +279,16 @@ function MatchCard({ match, rank }: { match: Match; rank: number }) {
           {meta.length > 0 && (
             <p className="text-muted-foreground mt-0.5 truncate text-sm">{meta.join(" · ")}</p>
           )}
-          <div className="mt-3 grid max-w-md grid-cols-2 gap-x-5 gap-y-1 text-xs">
+          <div className="mt-3 grid max-w-xl grid-cols-2 gap-x-5 gap-y-2 text-xs sm:grid-cols-4">
             {[
               { label: "Wording", value: match.scores.lexical, color: "var(--lexical)" },
               { label: "Meaning", value: match.scores.semantic, color: "var(--semantic)" },
+              { label: "Concepts", value: match.scores.concept ?? 0, color: "var(--concept)" },
+              {
+                label: "Structure",
+                value: match.scores.structural ?? 0,
+                color: "var(--structural)",
+              },
             ].map((s) => (
               <div key={s.label}>
                 <div className="text-muted-foreground mb-1 flex justify-between">
@@ -226,6 +307,11 @@ function MatchCard({ match, rank }: { match: Match; rank: number }) {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <span className="text-xl font-semibold tabular-nums">{pct(match.overall)}</span>
+          {match.hybrid !== undefined && (
+            <span className="text-muted-foreground text-xs tabular-nums">
+              hybrid {pct(match.hybrid)}
+            </span>
+          )}
           <ChevronDown
             className={cn(
               "text-muted-foreground size-4 transition-transform",
@@ -247,6 +333,7 @@ function MatchCard({ match, rank }: { match: Match; rank: number }) {
             className="overflow-hidden"
           >
             <div className="border-border space-y-3 border-t p-4 sm:p-5">
+              <ContextEvidence match={match} />
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-medium">
                   {match.evidence.length} matching passage{match.evidence.length === 1 ? "" : "s"}
@@ -283,7 +370,36 @@ function MatchCard({ match, rank }: { match: Match; rank: number }) {
 }
 
 /** The similarity report: summary, document facts, and each source with its evidence. */
-export function ReportView({ saved, onReset }: { saved: SavedAnalysis; onReset: () => void }) {
+/**
+ * While printing, every source is expanded so the paper copy carries all the evidence.
+ * Covers both the Print button and the browser's own print command (Ctrl+P).
+ */
+function usePrinting(): [boolean, () => void] {
+  const [printing, setPrinting] = useState(false);
+  useEffect(() => {
+    const before = () => flushSync(() => setPrinting(true));
+    const after = () => setPrinting(false);
+    window.addEventListener("beforeprint", before);
+    window.addEventListener("afterprint", after);
+    return () => {
+      window.removeEventListener("beforeprint", before);
+      window.removeEventListener("afterprint", after);
+    };
+  }, []);
+  return [printing, () => window.print()];
+}
+
+export function ReportView({
+  saved,
+  onReset,
+  actions,
+}: {
+  saved: SavedAnalysis;
+  onReset?: () => void;
+  /** Extra buttons for the header, e.g. Delete on a saved report. */
+  actions?: ReactNode;
+}) {
+  const [printing, print] = usePrinting();
   const { result, sourceName, analyzedAt } = saved;
   const { summary, document, matches } = result;
   const level = LEVELS[summary.level];
@@ -316,10 +432,19 @@ export function ReportView({ saved, onReset }: { saved: SavedAnalysis; onReset: 
               {corpusSize ? ` · compared with ${corpusSize} DIU reports` : ""}
             </p>
           </div>
-          <Button variant="outline" onClick={onReset} className="shrink-0">
-            <RotateCcw aria-hidden />
-            Analyze another
-          </Button>
+          <div className="flex shrink-0 flex-wrap gap-2 print:hidden">
+            <Button variant="outline" onClick={print}>
+              <Printer aria-hidden />
+              Print
+            </Button>
+            {actions}
+            {onReset && (
+              <Button variant="outline" onClick={onReset}>
+                <RotateCcw aria-hidden />
+                Analyze another
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="relative mt-8 grid items-center gap-8 md:grid-cols-[auto_1fr]">
@@ -335,6 +460,14 @@ export function ReportView({ saved, onReset }: { saved: SavedAnalysis; onReset: 
                 {level.label} potential similarity
               </span>
               <p className="text-muted-foreground mt-2 max-w-56 text-sm">{level.hint}</p>
+              {summary.hybrid !== undefined && (
+                <p className="mt-3 text-sm">
+                  <span className="font-semibold tabular-nums">{pct(summary.hybrid)}</span>{" "}
+                  <span className="text-muted-foreground">
+                    hybrid score (all four perspectives, top match)
+                  </span>
+                </p>
+              )}
             </div>
           </div>
           <div className="space-y-5">
@@ -398,14 +531,14 @@ export function ReportView({ saved, onReset }: { saved: SavedAnalysis; onReset: 
           </h2>
           {matches.length > 0 && (
             <p className="text-muted-foreground text-xs">
-              Select a report to see the matching passages
+              Select a report to see its passages, shared concepts and headings
             </p>
           )}
         </div>
         {matches.length > 0 ? (
           <ol className="space-y-3">
             {matches.map((m, i) => (
-              <MatchCard key={m.source.id} match={m} rank={i + 1} />
+              <MatchCard key={m.source.id} match={m} rank={i + 1} forceOpen={printing} />
             ))}
           </ol>
         ) : (
