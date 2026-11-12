@@ -5,7 +5,9 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false  # CI and fresh clones have no .env; copy .env.example to use one
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -38,7 +40,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false  # CI and fresh clones have no .env; copy .env.example to use one
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -56,7 +60,9 @@ services:
       context: ./ai-service
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false  # CI and fresh clones have no .env; copy .env.example to use one
     ports:
       - "${AI_SERVICE_PORT:-8001}:8001"
     depends_on:
@@ -72,7 +78,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false  # CI and fresh clones have no .env; copy .env.example to use one
     ports:
       - "3000:3000"
     depends_on:
