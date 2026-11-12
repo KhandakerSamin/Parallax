@@ -22,6 +22,8 @@ def engine(tmp_path_factory):
     url = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{tmp_path_factory.mktemp('db') / 'test.db'}"
     engine = build_engine(url)
     yield engine
+    # Leave the database empty: CI runs the migrations on the same database after the tests.
+    Base.metadata.drop_all(engine)
     engine.dispose()
 
 

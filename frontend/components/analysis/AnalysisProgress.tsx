@@ -12,12 +12,14 @@ const PDF_STEPS = [
   { label: "Embedding passages with LaBSE", at: 6 },
   { label: "Searching 32,000+ corpus passages", at: 18 },
   { label: "Checking wording and building evidence", at: 26 },
+  { label: "Comparing key concepts and chapter outlines", at: 30 },
 ];
 const TEXT_STEPS = [
   { label: "Splitting the text into passages", at: 0 },
   { label: "Embedding passages with LaBSE", at: 1 },
   { label: "Searching the corpus", at: 3 },
   { label: "Checking wording and building evidence", at: 5 },
+  { label: "Comparing key concepts", at: 7 },
 ];
 
 /** Shown while the analysis runs: elapsed time and the pipeline's steps. */
@@ -45,7 +47,7 @@ export function AnalysisProgress({ mode }: { mode: "pdf" | "text" }) {
           <p className="font-semibold">Analyzing…</p>
           <p className="text-muted-foreground text-sm">
             {mode === "pdf"
-              ? "A full report usually takes 20–40 seconds."
+              ? "A full report can take 2–3 minutes. Please keep this page open."
               : "This usually takes a few seconds."}
           </p>
         </div>

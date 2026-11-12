@@ -30,7 +30,7 @@ export function Navbar() {
   const hrefFor = (id: string) => (onHome ? `#${id}` : `/#${id}`);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4">
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 print:hidden">
       <motion.div
         className={cn(
           "mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 rounded-2xl border px-3 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 sm:px-4",

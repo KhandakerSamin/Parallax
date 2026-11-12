@@ -640,3 +640,25 @@
     animation-duration: 1ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print: reports print as clean pages without the site chrome.
+--------------------------------------------------------------------------- */
+@media print {
+  body::before {
+    display: none;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  li,
+  figure {
+    break-inside: avoid;
+  }
+}

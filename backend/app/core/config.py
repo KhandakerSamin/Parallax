@@ -43,9 +43,20 @@ class Settings(BaseSettings):
 
     # ----- Similarity analysis (the separate AI service) -----
     ai_service_url: str = "http://localhost:8001"
+    # Where browsers send PDFs directly (large uploads can't pass through the website's host).
+    # Empty means the same as ai_service_url.
+    ai_public_url: str = ""
+    # Shared with the AI service: authenticates the backend and signs upload tickets and results.
+    ai_shared_secret: str = "dev-ai-shared-secret"
     # A long report takes ~25 s on a laptop CPU, plus ~10 s to load the model the first time.
     ai_timeout_seconds: float = 180.0
     max_upload_mb: int = 25
+
+    @field_validator("ai_service_url", "ai_public_url", "ai_shared_secret")
+    @classmethod
+    def _strip(cls, value: str) -> str:
+        # Values piped into `vercel env add` can carry a trailing newline.
+        return value.strip()
 
     @field_validator("database_url")
     @classmethod

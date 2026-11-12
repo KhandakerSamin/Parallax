@@ -91,7 +91,7 @@ export function ScrollRail({
       onPointerUp={stopDrag}
       onPointerCancel={stopDrag}
       className={cn(
-        "group inset-y-0 right-0 z-[70] hidden w-4 cursor-pointer touch-none justify-end select-none sm:flex",
+        "group inset-y-0 right-0 z-[70] hidden w-4 cursor-pointer touch-none justify-end select-none sm:flex print:hidden",
         container ? "absolute" : "fixed",
         dragging && "cursor-grabbing",
         className,
