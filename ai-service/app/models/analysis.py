@@ -83,3 +83,4 @@ class AnalysisResult(BaseModel):
     corpus: dict[str, int | str]
     weights: dict[str, float] = Field(default_factory=dict, description="Perspective weights of the hybrid score.")
     notes: list[str] = []
+    signature: str | None = Field(None, description="Proof for the backend that this result is genuine.")

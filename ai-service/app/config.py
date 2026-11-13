@@ -25,7 +25,9 @@ class Settings:
     embedding_model: str = field(default_factory=lambda: os.getenv("EMBEDDING_MODEL", ""))
     max_upload_mb: int = field(default_factory=lambda: int(os.getenv("MAX_UPLOAD_MB", "25")))
     allowed_origins: list[str] = field(
-        default_factory=lambda: [o.strip() for o in os.getenv("AI_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+        default_factory=lambda: [
+            o.strip() for o in os.getenv("AI_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o.strip()
+        ]
     )
 
     @property
