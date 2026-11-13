@@ -1,0 +1,12 @@
+# Runtime only (no test or research tools). torch is installed first, CPU build.
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+pydantic==2.10.*
+python-dotenv==1.1.*
+python-multipart>=0.0.18,<0.1
+sentence-transformers==3.4.*
+transformers==4.48.*
+huggingface_hub>=0.30,<1.0
+faiss-cpu==1.9.*
+numpy>=1.26,<2.1
+PyMuPDF==1.25.*
