@@ -3,6 +3,8 @@
 GET  /health
 POST /analyze/text   analyse pasted text (quick, answered directly)
 POST /analyze        analyse a PDF and wait for the result
+POST /jobs           analyse a PDF in the background: answers at once with a job id
+GET  /jobs/{id}      the job's status, and its signed result once done
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from app.config import settings
 from app.models.analysis import AnalysisResult
 from app.security import require_access, sign_result
 from app.services.engine import Engine, IndexNotReadyError, UnreadablePdfError, get_engine
+from app.services.jobs import JobFailedError, queue
 
 router = APIRouter()
 
@@ -76,3 +79,28 @@ def analyze_pdf(engine: EngineDep, caller: CallerDep, file: PdfUpload) -> Analys
         return _signed(engine.analyze_pdf(data, file.filename or "report.pdf"), caller)
     except UnreadablePdfError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "The PDF could not be read.") from exc
+
+
+@router.post("/jobs", status_code=status.HTTP_202_ACCEPTED)
+def start_job(engine: EngineDep, caller: CallerDep, file: PdfUpload) -> dict:
+    """Accept a PDF at once and analyse it in the background; poll GET /jobs/{id}."""
+    data = _read_pdf(file)
+    filename = file.filename or "report.pdf"
+
+    def work() -> dict:
+        try:
+            result = _signed(engine.analyze_pdf(data, filename), caller)
+        except UnreadablePdfError as exc:
+            raise JobFailedError(422, "The PDF could not be read.") from exc
+        return result.model_dump()
+
+    job = queue.submit(caller, work)
+    return job.public(queue.position(job))
+
+
+@router.get("/jobs/{job_id}")
+def get_job(job_id: str, caller: CallerDep) -> dict:
+    job = queue.get(job_id, caller)
+    if job is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "This analysis was not found or has expired.")
+    return job.public(queue.position(job))
