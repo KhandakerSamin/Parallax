@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearAnalysis, loadAnalysis, saveAnalysis } from "@/lib/analysis/api";
 import type { SavedAnalysis } from "@/lib/analysis/types";
@@ -10,10 +11,12 @@ import { AnalyzeForm } from "./AnalyzeForm";
 import { ReportView } from "./ReportView";
 
 /**
- * /dashboard/analyze: the upload form, then the report. The latest report is
- * kept for this tab, so a refresh brings it back.
+ * /dashboard/analyze: the upload form. A finished analysis is saved by the backend,
+ * so the page moves on to that report's own page. If it could not be saved, the
+ * report shows here and is kept for this tab.
  */
 export function AnalyzeView() {
+  const router = useRouter();
   const [saved, setSaved] = useState<SavedAnalysis | null>(null);
 
   useEffect(() => {
@@ -23,6 +26,11 @@ export function AnalyzeView() {
   }, []);
 
   function onResult(next: SavedAnalysis) {
+    if (next.result.report_id) {
+      clearAnalysis();
+      router.push(`/dashboard/reports/${next.result.report_id}`);
+      return;
+    }
     saveAnalysis(next);
     setSaved(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -38,7 +46,7 @@ export function AnalyzeView() {
     <div className="space-y-6">
       <Link
         href="/dashboard"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors print:hidden"
       >
         <ArrowLeft className="size-4" aria-hidden />
         Dashboard
