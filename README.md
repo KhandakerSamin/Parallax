@@ -61,14 +61,19 @@ Parallax compares a report against a corpus of past **Daffodil International Uni
 |---|---|---|
 | **Lexical similarity** | Finds reused wording with 5-word shingles, sentence by sentence | ✅ Done |
 | **Semantic similarity** | Finds reworded *and translated* passages with multilingual LaBSE embeddings and FAISS search | ✅ Done |
-| **Evidence** | Shows each submitted passage beside its source passage, with section names | ✅ Done (API) |
+| **Evidence** | Shows each submitted passage beside its source passage, with section names | ✅ Done |
 | **Template filtering** | Ignores the shared DIU template, cover pages and boilerplate so they don't inflate scores | ✅ Done |
 | **Accounts** | Email/password and Google sign-in, with roles: student, reviewer, researcher and admin | ✅ Done |
 | **Profiles** | Google profile photo, Student ID or Staff ID, and department in the navbar and dashboard | ✅ Done |
-| **Concept similarity** | Compares the key ideas and terms of two reports | 🚧 Planned |
-| **Structural similarity** | Compares chapter and section organisation | 🚧 Planned |
-| **Upload and report pages** | Upload a PDF in the web app and read the report there | 🚧 In progress |
-| **Reviewer workflow** | Reviewer decisions, saved reports, admin tools | 🚧 Planned |
+| **Concept similarity** | Compares the distinctive key terms of two reports (TF-IDF), and shows the shared ones | ✅ Done |
+| **Structural similarity** | Aligns the two heading outlines in order, ignoring the shared DIU template | ✅ Done |
+| **Hybrid score** | Weighted blend of all four perspectives for each source | ✅ Done |
+| **Upload and report pages** | Upload a PDF or paste text in the web app and read the report with its evidence | ✅ Done |
+| **Saved reports** | Every analysis is saved; the dashboard lists past reports, each with its own printable page | ✅ Done |
+| **Reviewer workflow** | Reviewers see every report, mark it *cleared* or *needs follow-up* with a note; students see the decision | ✅ Done |
+| **Administration** | Admins see usage stats, search people, change roles and deactivate accounts | ✅ Done |
+| **Large uploads** | PDFs go straight to the AI service with a signed upload ticket and are analysed as a background job | ✅ Done |
+| **Evaluation** | Planted-reuse test with known answers, and a human-labelled set of real report pairs | ✅ Planted test · labelling in progress |
 
 ## How it works
 
@@ -113,19 +118,20 @@ Template text resembles many reports equally, so it never stands out. Real reuse
 ┌──────────────────┐   /api/v1/*   ┌──────────────────┐      ┌───────────────────┐
 │     Frontend     │ ────────────▶ │     Backend      │ ───▶ │    PostgreSQL     │
 │ Next.js · React  │   (proxied,   │ FastAPI · SQLA.  │      │  (Neon / SQLite)  │
-│  Tailwind · TS   │  same origin) │ accounts, auth   │      └───────────────────┘
+│  Tailwind · TS   │  same origin) │ auth, reports,   │      └───────────────────┘
+│     (Vercel)     │               │ reviews (Vercel) │
 └──────────────────┘               └──────────────────┘
-         │
-         │  analyze a report
-         ▼
-┌──────────────────┐      ┌──────────────────────────────────────────┐
-│    AI service    │ ───▶ │ FAISS index · LaBSE model · corpus JSON  │
-│ FastAPI · PyTorch│      │ 307 reports · 32,857 passages            │
-└──────────────────┘      └──────────────────────────────────────────┘
+         │  PDF + upload ticket             │  text, with a shared key
+         ▼                                  ▼
+┌──────────────────────────────────────────────────────┐      ┌─────────────────────────────────┐
+│ AI service · FastAPI · PyTorch (Azure App Service)   │ ───▶ │ FAISS index · LaBSE · corpus    │
+│ background jobs · signed results                     │      │ 1,925 reports · 209,386 passages │
+└──────────────────────────────────────────────────────┘      └─────────────────────────────────┘
 ```
 
 - **Frontend** and **backend** are separate deployments. Next.js forwards `/api/v1/*` to the backend, so the browser sees a single site and the httpOnly session cookie works without CORS.
 - The **AI service** is kept separate because the ML stack (PyTorch, the LaBSE model and the FAISS index) is several hundred MB and CPU-heavy. It must not slow down sign-in or page loads.
+- **PDF uploads skip the backend.** Vercel limits request bodies to about 4.5 MB, so the browser asks the backend for a 30-minute **upload ticket** and sends the PDF straight to the AI service. A full report takes 2–3 minutes on the CPU host, so it runs as a **background job** the browser polls. The AI service **signs** each result; the backend checks the signature before saving it as a report, so a result cannot be forged or changed on the way.
 
 ## Tech stack
 
@@ -136,7 +142,7 @@ Template text resembles many reports equally, so it never stands out. Real reuse
 | **Auth** | Opaque server sessions in httpOnly cookies, Google OAuth 2.0 with PKCE, login rate limiting |
 | **AI service** | PyMuPDF, sentence-transformers (LaBSE), FAISS, NumPy, FastAPI |
 | **Tooling** | pytest, Ruff, ESLint, Prettier, GitHub Actions, Docker Compose |
-| **Hosting** | Vercel (frontend and API), Neon PostgreSQL |
+| **Hosting** | Vercel (frontend and API), Neon PostgreSQL, Azure App Service (AI service) |
 
 ### Security highlights
 
@@ -146,10 +152,12 @@ Template text resembles many reports equally, so it never stands out. Real reuse
 - Login is limited to 5 failed attempts per 15 minutes per account.
 - Google sign-in uses the authorization-code flow with **PKCE** and an **HMAC-signed state** cookie. The ID token's issuer, audience, expiry and verified email are all checked.
 - Production refuses to start with the development secret key.
+- The AI service accepts only the backend (shared key) or a browser holding a valid, user-bound upload ticket (HMAC, 30 minutes), and signs every result it returns.
+- Reports are private to their owner; reviewers and admins can see all of them. Only the owner can delete a report, and only a super admin can grant admin rights.
 
 ## Results so far
 
-Corpus: **307** Software Engineering reports from DIU's public DSpace repository (2024–2025), about **2.2 million words**, giving **32,857** passages.
+Corpus: **1,925** Software Engineering and Computer Science reports from DIU's public DSpace repository (2018–2025), about **14.6 million words**, giving **209,386** passages. 102 reports the repository holds twice are left out automatically.
 
 **Model choice.** Four multilingual models were scored on hand-labelled passage pairs. The margin is the lowest "reuse" score minus the highest "different" score; higher is better.
 
@@ -160,7 +168,7 @@ Corpus: **307** Software Engineering reports from DIU's public DSpace repository
 | multilingual-e5-base | 0.91 | 0.96 | 0.90 | +0.02 |
 | **LaBSE** (chosen) | 0.86 | 0.87 | 0.56 | **+0.30** |
 
-**Calibration.** Every report was compared with all the others (leave-one-out):
+**Calibration.** First done on the original 307 SWE reports, comparing every report with all the others (leave-one-out):
 
 | Rule | Median top semantic | 90th percentile | Reports rated moderate or high |
 |---|---|---|---|
@@ -168,11 +176,26 @@ Corpus: **307** Software Engineering reports from DIU's public DSpace repository
 | cosine ≥ 0.85 | 0.0% | 8.5% | 8 |
 | **floor 0.75 + standout 0.15** | **0.0%** | **5.3%** | **13** |
 
+Re-checked on the full corpus with a random 400 reports: **16.5%** are moderate or high. That is real reuse a larger corpus can see (for example two "SWE Sport Event Reminder" reports by different students at 92%), so the rule was kept.
+
 **What the scan found:**
 
 - A Bangla translation of a corpus passage correctly finds its English source.
 - Two internship reports score **69% semantic but only 3% lexical**: heavily reworded text that a wording-only checker misses.
-- Duplicate repository uploads (the same report deposited twice) show up at 99%.
+- DSpace holds 102 reports twice (re-uploads, or one report filed under both departments). They used to show up at 99%; they are now detected and left out.
+
+**Planted-reuse evaluation** (135 trials on the full corpus; details in [docs/evaluation.md](docs/evaluation.md)):
+
+| Copied text | 5% of the report | 10% | 20% | 40% |
+|---|---|---|---|---|
+| Pasted as is: source found | 100% | 100% | 100% | 100% |
+| Lightly disguised (words dropped, sentences swapped): source found | 53% | 80% | 100% | 100% |
+
+- The size of pasted copies is estimated within about 2 points (19.3% for 20.1%).
+- Disguised copies drop to about 0% on word matching; the semantic perspective is what still finds them.
+- With nothing planted, there were no false alarms in 15 trials.
+
+A demo walkthrough with texts to paste is in [docs/demo.md](docs/demo.md).
 
 ## Getting started
 
@@ -231,7 +254,8 @@ pip install -r requirements.txt
 
 python scripts/harvest_dspace.py   # download reports from DIU DSpace (polite: 3 s between requests)
 python scripts/extract_corpus.py   # PDFs → structured JSON in data/processed/
-python scripts/build_index.py      # passages → FAISS index in data/embeddings/ (~50 min on a laptop CPU)
+python scripts/build_index.py      # passages → FAISS index in data/embeddings/ (~6 h per 1,000 reports on a CPU; resumable)
+python scripts/find_duplicates.py  # leave out reports the repository holds twice
 
 uvicorn app.main:app --port 8001   # http://localhost:8001/docs
 ```
@@ -287,6 +311,15 @@ Parallax/
 | POST | `/auth/login` | Sign in with email or university ID |
 | POST | `/auth/logout` | End the session |
 | GET | `/auth/me` | The signed-in user, or `null` |
+| POST | `/analysis/text`, `/analysis/pdf` | Analyze pasted text or a PDF and save the report |
+| GET | `/reports`, `/reports/{id}` | Your saved reports, or one with its full result |
+| DELETE | `/reports/{id}` | Delete one of your reports |
+| POST | `/analysis/ticket` | An upload ticket for sending a PDF straight to the AI service |
+| POST | `/reports` | Save a signed result from a direct upload |
+| PUT | `/reports/{id}/review` | Record a reviewer decision (reviewers and admins) |
+| GET | `/reviews` | The review queue, pending first (reviewers and admins) |
+| GET | `/admin/stats` | Accounts, reports and review counts (admins) |
+| GET, PATCH | `/admin/users`, `/admin/users/{id}` | Find people; change a role or deactivate an account (admins) |
 | GET | `/auth/google` | Start Google sign-in |
 | GET | `/auth/google/callback` | Google redirects here |
 | POST | `/auth/google/complete` | Finish a first-time Google sign-up |
@@ -298,6 +331,10 @@ Parallax/
 | GET | `/health` | Status and corpus size |
 | POST | `/analyze` | Analyze an uploaded PDF (≤ 25 MB) |
 | POST | `/analyze/text` | Analyze pasted text |
+| POST | `/jobs` | Start a PDF analysis in the background; returns a job id |
+| GET | `/jobs/{id}` | The job's status, and its signed result when done |
+
+Every analysis route needs the backend's `X-Parallax-Key` or a browser's `X-Parallax-Ticket`.
 
 The full response format is in [docs/similarity-engine.md](docs/similarity-engine.md#api).
 
@@ -311,8 +348,8 @@ cd frontend   && npm run lint && npm run typecheck && npm run build
 
 | Suite | Tests |
 |---|---|
-| Backend (auth, sessions, Google sign-in) | 56 |
-| AI service (extraction, passages, lexical, analyzer, API) | 161 |
+| Backend (auth, sessions, Google sign-in, analysis, reports, reviews, admin) | 100 |
+| AI service (extraction, passages, lexical, concept, structure, analyzer, duplicates, index, security, jobs, API) | 204 |
 
 **GitHub Actions** runs on every push and pull request:
 - Ruff and pytest for the backend and the AI service
@@ -327,19 +364,22 @@ cd frontend   && npm run lint && npm run typecheck && npm run build
 | Frontend | Vercel: [parallax-diu.vercel.app](https://parallax-diu.vercel.app) | `BACKEND_URL` points to the API project |
 | Backend API | Vercel (FastAPI) | `APP_ENV=production`, `SECRET_KEY`, `PUBLIC_URL`, `GOOGLE_*` |
 | Database | Neon PostgreSQL | Run `alembic upgrade head` against it **before** deploying a backend that needs a new migration |
-| AI service | Not hosted yet | Too large for Vercel; planned for a CPU host such as Render or Hugging Face Spaces |
+| AI service | Azure App Service (B2 Linux, East Asia) | Deployed with `ai-service/scripts/deploy_azure.py`; about $26/month on Azure for Students |
 
 ## Roadmap
 
 - [x] Landing page, theme toggle, responsive navigation
 - [x] Accounts: email/password, Google sign-in, roles, sessions
-- [x] Corpus of 307 DIU SWE reports with structured extraction
+- [x] Corpus of 1,925 DIU SWE and CSE reports with structured extraction and duplicate removal
 - [x] Lexical and semantic similarity with evidence, and the analysis API
-- [ ] Upload and report pages in the web app
-- [ ] Concept and structural perspectives, and a hybrid score
-- [ ] Saved reports, reviewer decisions, admin tools
-- [ ] Host the AI service
-- [ ] Human-labelled evaluation set, and a larger corpus across departments
+- [x] Upload and report pages in the web app
+- [x] Concept and structural perspectives, and a hybrid score
+- [x] Saved reports with printable report pages
+- [x] Reviewer decisions, admin tools
+- [x] Host the AI service, with direct uploads and background jobs
+- [x] Planted-reuse evaluation
+- [ ] Human-labelled evaluation on real report pairs
+- [ ] Corpus beyond SWE and CSE
 
 ## Team
 

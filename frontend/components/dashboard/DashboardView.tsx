@@ -1,17 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Building2, FileUp, History, IdCard, LogOut, Mail, ShieldCheck } from "lucide-react";
+import { Building2, FileUp, Gavel, IdCard, LogOut, Mail, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GoogleMark } from "@/components/auth/GoogleButton";
 import { SignOutDialog } from "@/components/auth/SignOutDialog";
+import { RecentReports } from "@/components/dashboard/RecentReports";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { UserAvatar } from "@/components/layout/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ROLE_LABELS, idLabel } from "@/lib/auth/types";
+import { ROLE_LABELS, idLabel, isAdmin, isReviewer } from "@/lib/auth/types";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -131,15 +132,51 @@ export function DashboardView() {
           transition={{ duration: 0.5, delay: 0.16, ease: EASE }}
           className="border-border bg-card rounded-3xl border p-6 sm:p-8"
         >
-          <span className="bg-concept-soft text-concept grid size-11 place-items-center rounded-xl">
-            <History className="size-5" aria-hidden />
-          </span>
-          <h2 className="mt-5 text-lg font-semibold">Recent reports</h2>
-          <p className="text-muted-foreground mt-1.5 text-sm">
-            No reports yet. Your similarity reports will appear here.
-          </p>
+          <RecentReports />
         </motion.section>
       </div>
+
+      {(isReviewer(user.role) || isAdmin(user.role)) && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.24, ease: EASE }}
+          className="grid gap-4 md:grid-cols-2"
+        >
+          {isReviewer(user.role) && (
+            <Link
+              href="/dashboard/reviews"
+              className="group border-border bg-card hover:border-primary/40 flex items-center gap-4 rounded-3xl border p-6 transition-colors"
+            >
+              <span className="bg-semantic-soft text-brand grid size-11 shrink-0 place-items-center rounded-xl">
+                <Gavel className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-semibold">Review queue</span>
+                <span className="text-muted-foreground text-sm">
+                  Students&apos; reports awaiting a decision, most similar first.
+                </span>
+              </span>
+            </Link>
+          )}
+          {isAdmin(user.role) && (
+            <Link
+              href="/dashboard/admin"
+              className="group border-border bg-card hover:border-primary/40 flex items-center gap-4 rounded-3xl border p-6 transition-colors"
+            >
+              <span className="bg-structural-soft text-structural grid size-11 shrink-0 place-items-center rounded-xl">
+                <Users className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-semibold">Administration</span>
+                <span className="text-muted-foreground text-sm">
+                  People, roles and an overview of the system.
+                </span>
+              </span>
+            </Link>
+          )}
+        </motion.div>
+      )}
 
       <p className="text-muted-foreground flex items-center gap-2 px-1 pt-2 text-xs">
         <ShieldCheck className="text-accent size-3.5" aria-hidden />
