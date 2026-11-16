@@ -182,7 +182,20 @@ Re-checked on the full corpus with a random 400 reports: **16.5%** are moderate 
 
 - A Bangla translation of a corpus passage correctly finds its English source.
 - Two internship reports score **69% semantic but only 3% lexical**: heavily reworded text that a wording-only checker misses.
-- Duplicate repository uploads (the same report deposited twice) show up at 99%.
+- DSpace holds 102 reports twice (re-uploads, or one report filed under both departments). They used to show up at 99%; they are now detected and left out.
+
+**Planted-reuse evaluation** (135 trials on the full corpus; details in [docs/evaluation.md](docs/evaluation.md)):
+
+| Copied text | 5% of the report | 10% | 20% | 40% |
+|---|---|---|---|---|
+| Pasted as is: source found | 100% | 100% | 100% | 100% |
+| Lightly disguised (words dropped, sentences swapped): source found | 53% | 80% | 100% | 100% |
+
+- The size of pasted copies is estimated within about 2 points (19.3% for 20.1%).
+- Disguised copies drop to about 0% on word matching; the semantic perspective is what still finds them.
+- With nothing planted, there were no false alarms in 15 trials.
+
+A demo walkthrough with texts to paste is in [docs/demo.md](docs/demo.md).
 
 ## Getting started
 
@@ -335,8 +348,8 @@ cd frontend   && npm run lint && npm run typecheck && npm run build
 
 | Suite | Tests |
 |---|---|
-| Backend (auth, sessions, Google sign-in) | 56 |
-| AI service (extraction, passages, lexical, analyzer, API) | 161 |
+| Backend (auth, sessions, Google sign-in, analysis, reports, reviews, admin) | 100 |
+| AI service (extraction, passages, lexical, concept, structure, analyzer, duplicates, index, security, jobs, API) | 204 |
 
 **GitHub Actions** runs on every push and pull request:
 - Ruff and pytest for the backend and the AI service
