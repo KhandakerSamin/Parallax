@@ -157,7 +157,7 @@ Template text resembles many reports equally, so it never stands out. Real reuse
 
 ## Results so far
 
-Corpus: **307** Software Engineering reports from DIU's public DSpace repository (2024–2025), about **2.2 million words**, giving **32,857** passages.
+Corpus: **1,925** Software Engineering and Computer Science reports from DIU's public DSpace repository (2018–2025), about **14.6 million words**, giving **209,386** passages. 102 reports the repository holds twice are left out automatically.
 
 **Model choice.** Four multilingual models were scored on hand-labelled passage pairs. The margin is the lowest "reuse" score minus the highest "different" score; higher is better.
 
@@ -168,13 +168,15 @@ Corpus: **307** Software Engineering reports from DIU's public DSpace repository
 | multilingual-e5-base | 0.91 | 0.96 | 0.90 | +0.02 |
 | **LaBSE** (chosen) | 0.86 | 0.87 | 0.56 | **+0.30** |
 
-**Calibration.** Every report was compared with all the others (leave-one-out):
+**Calibration.** First done on the original 307 SWE reports, comparing every report with all the others (leave-one-out):
 
 | Rule | Median top semantic | 90th percentile | Reports rated moderate or high |
 |---|---|---|---|
 | cosine ≥ 0.75 | 8.1% | 29.3% | 34 |
 | cosine ≥ 0.85 | 0.0% | 8.5% | 8 |
 | **floor 0.75 + standout 0.15** | **0.0%** | **5.3%** | **13** |
+
+Re-checked on the full corpus with a random 400 reports: **16.5%** are moderate or high. That is real reuse a larger corpus can see (for example two "SWE Sport Event Reminder" reports by different students at 92%), so the rule was kept.
 
 **What the scan found:**
 
@@ -239,7 +241,8 @@ pip install -r requirements.txt
 
 python scripts/harvest_dspace.py   # download reports from DIU DSpace (polite: 3 s between requests)
 python scripts/extract_corpus.py   # PDFs → structured JSON in data/processed/
-python scripts/build_index.py      # passages → FAISS index in data/embeddings/ (~50 min on a laptop CPU)
+python scripts/build_index.py      # passages → FAISS index in data/embeddings/ (~6 h per 1,000 reports on a CPU; resumable)
+python scripts/find_duplicates.py  # leave out reports the repository holds twice
 
 uvicorn app.main:app --port 8001   # http://localhost:8001/docs
 ```
