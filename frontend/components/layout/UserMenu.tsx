@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, IdCard, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { ChevronDown, Gavel, IdCard, LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { SignOutDialog } from "@/components/auth/SignOutDialog";
@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ROLE_LABELS, idLabel, type User } from "@/lib/auth/types";
+import { ROLE_LABELS, idLabel, isAdmin, isReviewer, type User } from "@/lib/auth/types";
 import { UserAvatar } from "./UserAvatar";
 
 export function UserMenu({ user }: { user: User }) {
@@ -58,6 +58,22 @@ export function UserMenu({ user }: { user: User }) {
               Dashboard
             </Link>
           </DropdownMenuItem>
+          {isReviewer(user.role) && (
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/reviews">
+                <Gavel aria-hidden />
+                Review queue
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {isAdmin(user.role) && (
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/admin">
+                <Users aria-hidden />
+                Administration
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem disabled>
             <Settings aria-hidden />
             Settings
