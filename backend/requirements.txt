@@ -12,3 +12,7 @@ email-validator==2.2.*
 argon2-cffi==23.1.*
 python-multipart==0.0.*
 httpx==0.28.*
+# Downloadable PDF reports: layout, HarfBuzz text shaping for Bangla, QR code
+fpdf2==2.8.*
+uharfbuzz==0.*
+segno==1.6.*
