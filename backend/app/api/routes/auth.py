@@ -1,11 +1,23 @@
 from fastapi import APIRouter, Request, Response, status
 
-from app.api.deps import DbSession, OptionalUser, session_token
+from app.api.deps import CurrentUser, DbSession, OptionalUser, session_token
 from app.core.config import get_settings
 from app.core.cookies import clear_session_cookie, set_session_cookie
 from app.core.errors import ApiError
 from app.core.rate_limit import FailedLoginLimiter
-from app.schemas.auth import ErrorResponse, LoginRequest, MeResponse, RegisterRequest, UserOut, UserResponse
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    ErrorResponse,
+    LoginRequest,
+    MeResponse,
+    ProfileUpdateRequest,
+    RegisterRequest,
+    RevokedResponse,
+    SessionListResponse,
+    SessionOut,
+    UserOut,
+    UserResponse,
+)
 from app.services import auth as auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -97,3 +109,80 @@ def me(request: Request, response: Response, user: OptionalUser) -> MeResponse:
             clear_session_cookie(response)
         return MeResponse(user=None)
     return MeResponse(user=UserOut.model_validate(user))
+
+
+# ----- The signed-in user's own account (Settings) ---------------------------
+# Email, student/staff ID and role never change through these routes.
+
+# Failed current-password checks, per account (same budget as sign-in).
+password_limiter = FailedLoginLimiter(_settings.login_max_attempts, _settings.login_window_minutes * 60)
+# Every profile or session change, per account: generous, but stops a runaway script.
+account_limiter = FailedLoginLimiter(30, 15 * 60)
+
+ACCOUNT_ERRORS = {401: {"model": ErrorResponse}, 429: {"model": ErrorResponse}}
+
+
+def _throttle(limiter: FailedLoginLimiter, key: str) -> None:
+    wait = limiter.retry_after(key)
+    if wait:
+        minutes = max(1, round(wait / 60))
+        raise ApiError(
+            429,
+            f"Too many attempts. Try again in {minutes} minute{'s' if minutes != 1 else ''}.",
+            headers={"Retry-After": str(wait)},
+        )
+
+
+@router.patch("/me", response_model=UserResponse, responses={**ACCOUNT_ERRORS, 422: {"model": ErrorResponse}})
+def update_me(body: ProfileUpdateRequest, response: Response, user: CurrentUser, db: DbSession) -> UserResponse:
+    """Change your name or department."""
+    _throttle(account_limiter, user.id)
+    account_limiter.record_failure(user.id)
+    if body.name is None and body.department is None:
+        raise ApiError(400, "Nothing to change.")
+    user = auth_service.update_profile(db, user, name=body.name, department=body.department)
+    _no_store(response)
+    return UserResponse(user=UserOut.model_validate(user))
+
+
+@router.post(
+    "/me/password",
+    response_model=RevokedResponse,
+    responses={**ACCOUNT_ERRORS, 400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+)
+def change_my_password(
+    body: ChangePasswordRequest, request: Request, response: Response, user: CurrentUser, db: DbSession
+) -> RevokedResponse:
+    """Change your password; every other signed-in browser is signed out."""
+    _throttle(password_limiter, user.id)
+    token = session_token(request)
+    try:
+        revoked = auth_service.change_password(db, user, body.current_password, body.new_password, keep_token=token)
+    except auth_service.NoPasswordError as exc:
+        raise ApiError(400, "You sign in with Google, so there is no password to change.") from exc
+    if revoked is None:
+        password_limiter.record_failure(user.id)
+        raise ApiError(400, "Your current password is incorrect.", field="currentPassword")
+    password_limiter.reset(user.id)
+    _no_store(response)
+    return RevokedResponse(revoked=revoked)
+
+
+@router.get("/me/sessions", response_model=SessionListResponse, responses=ACCOUNT_ERRORS)
+def my_sessions(request: Request, response: Response, user: CurrentUser, db: DbSession) -> SessionListResponse:
+    """Browsers signed in to your account."""
+    token = session_token(request)
+    sessions = [
+        SessionOut.model_validate(s).model_copy(update={"current": auth_service.is_current_session(s, token)})
+        for s in auth_service.list_sessions(db, user)
+    ]
+    _no_store(response)
+    return SessionListResponse(sessions=sessions)
+
+
+@router.post("/me/sessions/revoke-others", response_model=RevokedResponse, responses=ACCOUNT_ERRORS)
+def revoke_my_other_sessions(request: Request, user: CurrentUser, db: DbSession) -> RevokedResponse:
+    """Sign out every browser except this one."""
+    _throttle(account_limiter, user.id)
+    account_limiter.record_failure(user.id)
+    return RevokedResponse(revoked=auth_service.revoke_other_sessions(db, user, session_token(request)))

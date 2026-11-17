@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session, sessionmaker
 
 import app.models  # noqa: F401
-from app.api.routes.auth import login_limiter
+from app.api.routes.auth import account_limiter, login_limiter, password_limiter
 from app.db.base import Base
 from app.db.session import build_engine, get_db
 from app.main import app as fastapi_app
@@ -48,6 +48,8 @@ def client(session_factory) -> Iterator[TestClient]:
 
     fastapi_app.dependency_overrides[get_db] = _get_db
     login_limiter.reset()
+    password_limiter.reset()
+    account_limiter.reset()
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()

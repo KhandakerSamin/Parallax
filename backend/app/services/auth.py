@@ -127,6 +127,61 @@ def revoke_session(db: Session, token: str | None) -> None:
         db.commit()
 
 
+def revoke_other_sessions(db: Session, user: User, keep_token: str | None) -> int:
+    """End every session of this user except the one holding `keep_token`. Returns how many ended."""
+    query = delete(AuthSession).where(AuthSession.user_id == user.id)
+    if keep_token:
+        query = query.where(AuthSession.token_hash != hash_token(keep_token))
+    result = db.execute(query)
+    db.commit()
+    return result.rowcount or 0
+
+
+def list_sessions(db: Session, user: User) -> list[AuthSession]:
+    """The user's live sessions, most recently used first."""
+    query = (
+        select(AuthSession)
+        .where(AuthSession.user_id == user.id, AuthSession.expires_at > utcnow())
+        .order_by(AuthSession.last_seen_at.desc())
+    )
+    return list(db.scalars(query))
+
+
+def is_current_session(session: AuthSession, token: str | None) -> bool:
+    return bool(token) and session.token_hash == hash_token(token)
+
+
+def update_profile(db: Session, user: User, *, name: str | None, department: str | None) -> User:
+    """Change the name and/or department. Email, ID and role are never changed here."""
+    if name is not None:
+        user.name = name
+    if department is not None:
+        user.department = department
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+class NoPasswordError(Exception):
+    """The account signs in with Google only, so there is no password to change."""
+
+
+def change_password(db: Session, user: User, current: str, new: str, *, keep_token: str | None) -> int | None:
+    """Replace the password after checking the current one, then end every other session.
+
+    Returns how many other sessions ended, or None when the current password is wrong. The check costs the same time
+    whether or not it matches (Argon2id verify either way).
+    """
+    if user.password_hash is None:
+        verify_password(current, None)  # same cost as a real check
+        raise NoPasswordError
+    if not verify_password(current, user.password_hash):
+        return None
+    user.password_hash = hash_password(new)
+    db.commit()
+    return revoke_other_sessions(db, user, keep_token)
+
+
 def purge_expired_sessions(db: Session) -> int:
     result = db.execute(delete(AuthSession).where(AuthSession.expires_at <= utcnow()))
     db.commit()
