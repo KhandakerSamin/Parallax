@@ -51,5 +51,9 @@ class Report(Base):
         return self.user.university_id if self.user else None
 
     @property
+    def owner_department(self) -> str | None:
+        return self.user.department if self.user else None
+
+    @property
     def reviewer_name(self) -> str | None:
         return self.reviewed_by.name if self.reviewed_by else None

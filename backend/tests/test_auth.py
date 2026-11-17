@@ -37,7 +37,9 @@ def test_register_creates_user_and_signs_in(client, new_user):
         "department",
         "avatarUrl",
         "googleLinked",
+        "hasPassword",
     }
+    assert user["hasPassword"] is True  # never the hash itself
 
     set_cookie = response.headers["set-cookie"]
     assert f"{COOKIE}=" in set_cookie

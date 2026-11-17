@@ -37,6 +37,14 @@
   --danger: #b91c1c;
   --success: #047857;
 
+  /* Similarity levels: separate from the perspective colours, always shown with a shape too. */
+  --level-high: #b42318;
+  --level-moderate: #b54708;
+  --level-low: #067647;
+  --level-high-soft: #fee4e2;
+  --level-moderate-soft: #fef0c7;
+  --level-low-soft: #dcfae6;
+
   --glass: rgb(255 255 255 / 0.72);
   --grid-line: rgb(15 23 42 / 0.06);
   --shadow-color: 222 47% 11%;
@@ -72,6 +80,13 @@
   --danger: #fca5a5;
   --success: #6ee7b7;
 
+  --level-high: #fda29b;
+  --level-moderate: #fec84b;
+  --level-low: #75e0a7;
+  --level-high-soft: rgb(240 68 56 / 0.16);
+  --level-moderate-soft: rgb(247 144 9 / 0.15);
+  --level-low-soft: rgb(23 178 106 / 0.15);
+
   --glass: rgb(11 15 26 / 0.7);
   --grid-line: rgb(226 232 240 / 0.05);
   --shadow-color: 228 60% 2%;
@@ -103,6 +118,12 @@
   --color-structural-soft: var(--structural-soft);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-level-high: var(--level-high);
+  --color-level-moderate: var(--level-moderate);
+  --color-level-low: var(--level-low);
+  --color-level-high-soft: var(--level-high-soft);
+  --color-level-moderate-soft: var(--level-moderate-soft);
+  --color-level-low-soft: var(--level-low-soft);
   --color-glass: var(--glass);
 
   --font-sans: var(--font-geist), var(--font-bangla), ui-sans-serif, system-ui, sans-serif;
@@ -658,7 +679,40 @@
   }
 
   li,
-  figure {
+  figure,
+  [data-print-avoid-break] {
     break-inside: avoid;
   }
+
+  /* The dashboard prints its content only: no sidebar, top bar or controls. */
+  [data-app-chrome] {
+    display: none !important;
+  }
+
+  [data-app-main] {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Bangla text in the dashboard: the Bangla font and room for its vowel signs. */
+.bn-aware:lang(bn),
+.bn-aware [lang="bn"] {
+  font-family: var(--font-bangla);
+  line-height: 1.75;
+}
+
+/* Clamp long passages to a few lines without cutting a conjunct (CSS, not string slicing). */
+.clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

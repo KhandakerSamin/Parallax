@@ -30,6 +30,8 @@ type AuthContextValue = {
   completeGoogleSignUp: (input: GoogleCompleteInput) => Promise<User>;
   /** Ends the session and returns to the landing page. */
   signOut: () => Promise<void>;
+  /** Replaces the signed-in user after the account changed (Settings). */
+  setUser: (user: User) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -98,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       completeGoogleSignUp,
       signOut,
+      setUser,
     }),
     [user, status, signIn, signUp, completeGoogleSignUp, signOut],
   );

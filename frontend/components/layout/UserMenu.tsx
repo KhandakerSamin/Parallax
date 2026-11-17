@@ -74,10 +74,11 @@ export function UserMenu({ user }: { user: User }) {
               </Link>
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem disabled>
-            <Settings aria-hidden />
-            Settings
-            <span className="text-muted-foreground ml-auto text-[10px]">Soon</span>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/settings">
+              <Settings aria-hidden />
+              Settings
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

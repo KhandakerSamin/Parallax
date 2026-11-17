@@ -84,6 +84,7 @@ export type ReportSummary = {
   /** Who wrote it: shown to reviewers. */
   ownerName?: string | null;
   ownerUniversityId?: string | null;
+  ownerDepartment?: string | null;
   /** A reviewer's decision; the score never decides. */
   reviewStatus?: ReviewStatus;
   reviewNote?: string | null;

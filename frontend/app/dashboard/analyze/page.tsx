@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { AnalyzeView } from "@/components/analysis/AnalyzeView";
-import { Navbar } from "@/components/layout/Navbar";
-import { SkipLink } from "@/components/layout/SkipLink";
+import { Suspense } from "react";
+import { AnalyzePage } from "@/components/analyze/AnalyzePage";
+import { Skeleton } from "@/components/app/ui";
 
 export const metadata: Metadata = {
   title: "Analyze a document — Parallax",
-  robots: { index: false, follow: false },
 };
 
-export default function AnalyzePage() {
+export default function AnalyzeRoute() {
+  // The mode (?mode=pdf|text) is read from the URL, which needs a Suspense boundary.
   return (
-    <>
-      <SkipLink />
-      <Navbar />
-      <main id="main" className="container-page max-w-5xl pt-28 pb-16 md:pt-32">
-        <AnalyzeView />
-      </main>
-    </>
+    <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+      <AnalyzePage />
+    </Suspense>
   );
 }

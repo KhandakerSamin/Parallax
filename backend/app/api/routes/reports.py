@@ -3,6 +3,7 @@
   POST   /reports        save a result the AI service signed (direct PDF uploads)
   GET    /reports        newest first, summaries only
   GET    /reports/{id}   one report with its full result
+  GET    /reports/{id}/pdf   the same report as a downloadable PDF
   DELETE /reports/{id}   the owner only
   PUT    /reports/{id}/review   a reviewer's decision: pending, cleared or follow_up
 
@@ -19,10 +20,11 @@ from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, Field
 
 from app.api.deps import CurrentUser, DbSession
+from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.schemas.auth import ErrorResponse
 from app.schemas.reports import ReportListResponse, ReportResponse, ReportSummary, ReviewRequest
-from app.services import analysis
+from app.services import analysis, report_pdf
 from app.services import reports as report_service
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -68,6 +70,48 @@ def get_report(report_id: str, user: CurrentUser, db: DbSession) -> ReportRespon
     if report is None:
         raise ApiError(404, NOT_FOUND)
     return ReportResponse(report=ReportSummary.model_validate(report), result=report.result)
+
+
+@router.get(
+    "/{report_id}/pdf",
+    response_class=Response,
+    responses={
+        200: {"content": {"application/pdf": {}}, "description": "The report as an A4 PDF"},
+        401: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+def download_report_pdf(report_id: str, user: CurrentUser, db: DbSession) -> Response:
+    """The saved report as a PDF. Same access as the report page: the owner, or a reviewer."""
+    report = report_service.get_report(db, user, report_id)
+    if report is None:
+        raise ApiError(404, NOT_FOUND)
+    owner = report.user
+    context = report_pdf.ReportContext(
+        report_id=report.id,
+        title=report.title,
+        source_kind=report.source_kind,
+        created_at=report.created_at,
+        owner_name=owner.name if owner else "Unknown",
+        owner_university_id=owner.university_id if owner else "",
+        owner_department=owner.department if owner else "",
+        owner_role=owner.role.value if owner else "student",
+        review_status=report.review_status,
+        review_note=report.review_note,
+        reviewer_name=report.reviewer_name,
+        reviewed_at=report.reviewed_at,
+        result=report.result,
+        report_url=f"{get_settings().public_url.rstrip('/')}/dashboard/reports/{report.id}",
+    )
+    name = report_pdf.filename(report.title, report.created_at)
+    return Response(
+        content=report_pdf.render(context),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{name}"',
+            "Cache-Control": "private, no-store",
+        },
+    )
 
 
 @router.delete(

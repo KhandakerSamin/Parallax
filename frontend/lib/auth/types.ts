@@ -24,6 +24,8 @@ export type User = {
   avatarUrl?: string | null;
   /** True once the account is linked to a Google account. */
   googleLinked?: boolean;
+  /** False for accounts that only sign in with Google. */
+  hasPassword?: boolean;
 };
 
 /** Roles that review reports, and roles that administer the system (mirrors the backend). */

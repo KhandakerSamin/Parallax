@@ -57,5 +57,9 @@ class User(Base):
     def google_linked(self) -> bool:
         return self.google_sub is not None
 
+    @property
+    def has_password(self) -> bool:
+        return self.password_hash is not None
+
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role.value})>"

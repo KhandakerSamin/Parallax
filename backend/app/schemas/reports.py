@@ -26,6 +26,7 @@ class ReportSummary(CamelModel):
     user_id: str | None = None
     owner_name: str | None = None
     owner_university_id: str | None = None
+    owner_department: str | None = None
     review_status: str = "pending"
     review_note: str | None = None
     reviewer_name: str | None = None

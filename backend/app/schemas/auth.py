@@ -1,6 +1,7 @@
 """Request/response bodies for /auth. JSON uses camelCase to match the frontend."""
 
 import re
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -124,6 +125,7 @@ class UserOut(CamelModel):
     department: str
     avatar_url: str | None = None
     google_linked: bool = False
+    has_password: bool = True
 
 
 class UserResponse(CamelModel):
@@ -137,3 +139,45 @@ class MeResponse(CamelModel):
 class ErrorResponse(BaseModel):
     message: str
     field: str | None = None
+
+
+# ----- The signed-in user's own account (Settings) ---------------------------
+
+
+class ProfileUpdateRequest(CamelModel):
+    """Only the name and department; email, ID and role never change here."""
+
+    name: str | None = Field(None, min_length=2, max_length=80)
+    department: str | None = None
+
+    @field_validator("department")
+    @classmethod
+    def _known_department(cls, value: str | None) -> str | None:
+        if value is not None and value not in DEPARTMENTS:
+            raise ValueError("Choose your department.")
+        return value
+
+
+class ChangePasswordRequest(CamelModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: Password = Field(json_schema_extra={"format": "password"})
+
+
+class SessionOut(CamelModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_agent: str | None = None
+    remember: bool = False
+    created_at: datetime
+    last_seen_at: datetime
+    expires_at: datetime
+    current: bool = False
+
+
+class SessionListResponse(CamelModel):
+    sessions: list[SessionOut]
+
+
+class RevokedResponse(CamelModel):
+    revoked: int
