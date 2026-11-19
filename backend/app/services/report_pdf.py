@@ -705,6 +705,7 @@ def _source_section(pdf: _Doc, rank: int, match: dict[str, Any]) -> None:
     title = _clean(source.get("title") or "Untitled")
     pdf.multi_cell(pdf.content_w - 30, pdf.line_h(13.5, title) * 0.9, title, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(1.2)
+    title_bottom = pdf.get_y()  # a long title wraps; what follows starts below it
     top = y + 3.8
     pdf.set_xy(pdf.w - pdf.r_margin - 30, top)
     pdf.font(18, "semi")
@@ -713,7 +714,7 @@ def _source_section(pdf: _Doc, rank: int, match: dict[str, Any]) -> None:
     pdf.font(7.8)
     pdf.ink(MUTED)
     pdf.cell(30, 4, "hybrid score", align="R")
-    pdf.set_y(max(pdf.get_y(), top + 14))
+    pdf.set_y(max(title_bottom, top + 14))
     meta = " · ".join(str(v) for v in (source.get("year"), source.get("type")) if v)
     if meta:
         pdf.para(meta, 9, MUTED)
