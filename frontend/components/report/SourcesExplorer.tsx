@@ -4,6 +4,7 @@ import { ExternalLink, Languages } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { PerspectiveBar, PerspectiveMiniBar } from "@/components/app/charts";
 import { EmptyState, Panel } from "@/components/app/ui";
+import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Evidence, Match } from "@/lib/analysis/types";
 import { isMostlyBangla, langProps, pct } from "@/lib/app/format";
@@ -76,20 +77,16 @@ export function SourcesExplorer({
             Matching sources{" "}
             <span className="text-muted-foreground font-normal">({matches.length})</span>
           </h2>
-          <label className="text-muted-foreground flex items-center gap-2 text-xs print:hidden">
-            Sort
-            <select
+          <div className="text-muted-foreground flex items-center gap-2 text-xs print:hidden">
+            <span aria-hidden>Sort</span>
+            <Select
+              size="sm"
+              aria-label="Sort sources"
               value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="border-input bg-card text-foreground h-8 rounded-lg border px-2 text-xs"
-            >
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
+              onValueChange={setSort}
+              options={SORTS}
+            />
+          </div>
         </div>
         <ul
           className={cn(

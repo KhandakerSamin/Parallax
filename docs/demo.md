@@ -14,18 +14,22 @@ similarity for a person to review. It never decides that something is plagiarism
    - **Student**: a DIU account with the student role
    - **Reviewer**: a DIU account with the reviewer role (sign up and pick "Reviewer")
    - **Admin**: your own account, after `MAKE-ADMIN.bat`
-4. Have one real DIU report PDF ready (any final report). A full PDF takes 2–3 minutes, so start that upload
-   first and talk while it runs.
+4. Have the demo report ready: `Parallax-Demo-Report.pdf`, built by `python -m scripts.make_demo_report` in
+   `backend/`. It has a known answer: **Moderate, about 21%**, with *Restaurant Management System* (8053) as the
+   closest source and *Food Parlour* (8051) second, because one section copies a paragraph they share. A full PDF
+   takes 2–3 minutes, so start that upload first and talk while it runs.
+   Don't upload a report that is already on DIU DSpace: it is in the library, so it matches itself at 100%.
 
 ## The walkthrough
 
 | Time | Show | Say |
 |---|---|---|
 | 0:00 | Homepage | The problem: reports are reworded or translated, so word-matching checkers miss reuse. |
-| 1:00 | Student: **Analyze → upload the PDF** | It goes straight to the AI service with a signed ticket and runs as a background job. |
+| 1:00 | Student: **Analyze → upload the demo PDF** | It goes straight to the AI service with a signed ticket and runs as a background job. A "Play while you wait?" game is offered; choose **No thanks** to keep presenting (the report opens by itself), or show one round of *Parallax Pairs*: matching English words to their Bangla meanings is what the semantic perspective does. |
 | 1:30 | Student: **Analyze → paste the English text** below | Copy-paste: the **lexical** score is high and the matching sentences are shown side by side. |
 | 3:00 | Student: **paste the Bangla text** below | **0% lexical, 100% semantic**: the Bangla translation finds its English source. This is the core idea. |
-| 4:30 | The PDF report, once done | Four perspectives per source: lexical, semantic, concept (shared key terms), structure (same heading order). |
+| 4:30 | The PDF report, once done | Four perspectives per source: lexical, semantic, concept (shared key terms), structure (same heading order). Open the copied *Background* paragraph beside its source. |
+| 5:30 | **Download PDF** on the report | An A4 report with the DIU logo, the sources, the evidence and a verification QR code. **Print** prints the same file. Corpus authors' names are never printed. |
 | 6:00 | Reviewer: **Reviews** | The queue lists pending reports first. Open one, read the evidence, mark it *cleared* or *needs follow-up* with a note. |
 | 7:30 | Student: the same report | The student now sees the reviewer's decision. |
 | 8:00 | Admin: **Administration** | Usage numbers, find a person, change a role, deactivate an account. |
@@ -47,8 +51,10 @@ of IL-4 Inducing Peptides* (item 14111). Expected: the IL-4 report is the top so
 ## If something goes wrong
 
 - **"The AI service is starting"** or a long wait on the first try: the service was asleep. Wait a minute and retry.
-- **The PDF takes longer than 3 minutes**: keep presenting with the pasted texts; the report appears on the
-  dashboard when it finishes.
+- **The PDF takes longer than 3 minutes**: keep presenting with the pasted texts in another tab, but leave the
+  upload tab open: the browser saves the report at the end, so closing that tab loses the result.
+- **The game invitation is in the way**: turn it off under **Settings → Appearance** ("Offer a game while a PDF
+  is being analysed").
 - **No Reviews or Administration menu**: sign out and in again after `MAKE-ADMIN.bat`.
 
 ## Likely questions

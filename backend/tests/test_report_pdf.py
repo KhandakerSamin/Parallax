@@ -167,3 +167,77 @@ def test_filename_and_fingerprint_are_stable():
 def test_key_terms_are_matched_as_whole_words():
     marked = report_pdf._emphasise("satisfaction with tio and Tio", ["tio"])
     assert marked == "satisfaction with **tio** and **Tio**"
+
+
+def _context(result=RESULT):
+    return report_pdf.ReportContext(
+        report_id="r1",
+        title="Parallax-Demo-Report.pdf",
+        source_kind="pdf",
+        created_at=None,
+        owner_name="Nusrat Jahan",
+        owner_university_id="221-35-123",
+        owner_department="Software Engineering",
+        owner_role="student",
+        review_status="pending",
+        review_note=None,
+        reviewer_name=None,
+        reviewed_at=None,
+        result=result,
+        report_url="https://example.test/dashboard/reports/r1",
+    )
+
+
+def test_cover_shows_the_diu_logo_instead_of_text(monkeypatch):
+    from fpdf import FPDF
+
+    images: list[str] = []
+    drawn: list[str] = []
+    original_image, original_cell = FPDF.image, FPDF.cell
+
+    def image_spy(self, name, *args, **kwargs):
+        images.append(str(name))
+        return original_image(self, name, *args, **kwargs)
+
+    def cell_spy(self, *args, **kwargs):
+        drawn.append(str(kwargs.get("text", args[2] if len(args) > 2 else "")))
+        return original_cell(self, *args, **kwargs)
+
+    monkeypatch.setattr(FPDF, "image", image_spy)
+    monkeypatch.setattr(FPDF, "cell", cell_spy)
+    report_pdf.render(_context())
+
+    assert report_pdf.DIU_LOGO.is_file()
+    assert images and images[0].endswith("diu-logo.png")
+    assert "Daffodil International University" not in drawn
+    assert "SE 331 Capstone" not in drawn
+
+
+def test_a_long_source_title_never_overlaps_the_line_below(monkeypatch):
+    from fpdf import FPDF
+
+    long_title = (
+        "Analyzing the Usability and Accessibility of Mobile Banking Applications for Elderly Users in Rural Bangladesh"
+    )
+    result = {
+        **RESULT,
+        "matches": [{**RESULT["matches"][0], "source": {**RESULT["matches"][0]["source"], "title": long_title}}],
+    }
+    spans: list[tuple[str, float, float]] = []
+    original = FPDF.multi_cell
+
+    def spy(self, *args, **kwargs):
+        text = str(kwargs.get("text", args[2] if len(args) > 2 else ""))
+        top = self.get_y()
+        out = original(self, *args, **kwargs)
+        spans.append((text, top, self.get_y()))
+        return out
+
+    monkeypatch.setattr(FPDF, "multi_cell", spy)
+    report_pdf.render(_context(result))
+
+    # In the source section the title is drawn, then the "year · type" line under it.
+    meta = next(i for i, (text, _, _) in enumerate(spans) if text == "2024 · Thesis")
+    _, title_top, title_bottom = next(s for s in reversed(spans[:meta]) if s[0] == long_title)
+    assert title_bottom - title_top > 10  # the title really wraps onto a second line
+    assert spans[meta][1] >= title_bottom
