@@ -5,7 +5,8 @@ import { useTheme } from "next-themes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { THEME_OPTIONS, useMounted } from "@/components/app/shell/ThemeMenu";
+import { useMounted } from "@/components/app/shell/useMounted";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { ConfirmDialog, ErrorState, PageHeader, Panel, Skeleton } from "@/components/app/ui";
 import { GoogleMark } from "@/components/auth/GoogleButton";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -465,36 +466,33 @@ function ConnectedSection({ user }: { user: User }) {
 }
 
 function AppearanceSection() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
+  const followsDevice = mounted && theme === "system";
+  const current = resolvedTheme === "dark" ? "dark" : "light";
   return (
-    <Panel
-      title="Appearance"
-      description="Light, dark, or follow your device. Remembered in this browser."
-    >
-      <div role="radiogroup" aria-label="Theme" className="grid gap-3 sm:grid-cols-3">
-        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
-          const active = mounted && theme === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => setTheme(value)}
-              className={cn(
-                "flex cursor-pointer flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-colors",
-                active
-                  ? "border-primary/50 bg-semantic-soft/50 ring-primary/20 ring-2"
-                  : "border-border hover:bg-muted/50",
-              )}
-            >
-              <Icon className="size-5" aria-hidden />
-              <span className="text-sm font-medium">{label}</span>
-            </button>
-          );
-        })}
+    <Panel title="Appearance" description="Light or dark. Remembered in this browser.">
+      <div className="border-border flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4">
+        <div>
+          <p className="text-sm font-medium">Dark mode</p>
+          <p className="text-muted-foreground mt-0.5 min-h-4 text-xs">
+            {mounted &&
+              (followsDevice
+                ? `Following your device (${current} right now).`
+                : `The ${current} theme, chosen by you.`)}
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
+      {mounted && !followsDevice && (
+        <button
+          type="button"
+          onClick={() => setTheme("system")}
+          className="text-brand mt-3 cursor-pointer text-xs font-medium hover:underline"
+        >
+          Follow my device instead
+        </button>
+      )}
       <p className="text-muted-foreground mt-4 text-xs">
         Animations follow your device&apos;s reduced-motion setting automatically.
       </p>

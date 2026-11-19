@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { AccountMenu } from "./AccountMenu";
 import { crumbsFor, isActive, navFor } from "./nav";
 import { ShellContext } from "./ShellContext";
-import { ThemeMenu } from "./ThemeMenu";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const COLLAPSE_KEY = "parallax:sidebar-collapsed";
 
@@ -186,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                 </ol>
               </nav>
-              <ThemeMenu />
+              <ThemeToggle className="mr-1" />
               <AccountMenu user={user} />
             </header>
 
