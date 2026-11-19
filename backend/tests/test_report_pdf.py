@@ -211,3 +211,33 @@ def test_cover_shows_the_diu_logo_instead_of_text(monkeypatch):
     assert images and images[0].endswith("diu-logo.png")
     assert "Daffodil International University" not in drawn
     assert "SE 331 Capstone" not in drawn
+
+
+def test_a_long_source_title_never_overlaps_the_line_below(monkeypatch):
+    from fpdf import FPDF
+
+    long_title = (
+        "Analyzing the Usability and Accessibility of Mobile Banking Applications for Elderly Users in Rural Bangladesh"
+    )
+    result = {
+        **RESULT,
+        "matches": [{**RESULT["matches"][0], "source": {**RESULT["matches"][0]["source"], "title": long_title}}],
+    }
+    spans: list[tuple[str, float, float]] = []
+    original = FPDF.multi_cell
+
+    def spy(self, *args, **kwargs):
+        text = str(kwargs.get("text", args[2] if len(args) > 2 else ""))
+        top = self.get_y()
+        out = original(self, *args, **kwargs)
+        spans.append((text, top, self.get_y()))
+        return out
+
+    monkeypatch.setattr(FPDF, "multi_cell", spy)
+    report_pdf.render(_context(result))
+
+    # In the source section the title is drawn, then the "year · type" line under it.
+    meta = next(i for i, (text, _, _) in enumerate(spans) if text == "2024 · Thesis")
+    _, title_top, title_bottom = next(s for s in reversed(spans[:meta]) if s[0] == long_title)
+    assert title_bottom - title_top > 10  # the title really wraps onto a second line
+    assert spans[meta][1] >= title_bottom
