@@ -1,13 +1,13 @@
 "use client";
 
 import { Check, Copy, Download, Gavel, Loader2, Printer, ShieldCheck, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ScoreRing } from "@/components/app/charts";
 import { DecisionChip, LevelBadge, SourceKindChip } from "@/components/app/ui";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { downloadReportPdf } from "@/lib/analysis/api";
+import { downloadReportPdf, printReportPdf } from "@/lib/analysis/api";
 import { AnalysisError, type Match, type SavedReport } from "@/lib/analysis/types";
 import { formatDate, langProps, pct, shortId } from "@/lib/app/format";
 import { PERSPECTIVES, type PerspectiveKey } from "@/lib/app/terms";
@@ -40,6 +40,7 @@ export function ReportHeader({
 }) {
   const { report } = saved;
   const [downloading, setDownloading] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const [copied, setCopied] = useState(false);
 
   async function download() {
@@ -50,6 +51,31 @@ export function ReportHeader({
       toast.error(err instanceof AnalysisError ? err.message : "The PDF could not be created.");
     } finally {
       setDownloading(false);
+    }
+  }
+
+  // Ctrl+P / Cmd+P on a report prints the same PDF as the Print button.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        printReportPdf(report.id).catch((err: unknown) =>
+          toast.error(err instanceof AnalysisError ? err.message : "The PDF could not be created."),
+        );
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [report.id]);
+
+  async function print() {
+    setPrinting(true);
+    try {
+      await printReportPdf(report.id);
+    } catch (err) {
+      toast.error(err instanceof AnalysisError ? err.message : "The PDF could not be created.");
+    } finally {
+      setPrinting(false);
     }
   }
 
@@ -105,9 +131,9 @@ export function ReportHeader({
           )}
           {downloading ? "Preparing PDF…" : "Download PDF"}
         </Button>
-        <Button variant="outline" onClick={() => window.print()}>
-          <Printer aria-hidden />
-          Print
+        <Button variant="outline" onClick={print} disabled={printing}>
+          {printing ? <Loader2 className="animate-spin" aria-hidden /> : <Printer aria-hidden />}
+          {printing ? "Preparing…" : "Print"}
         </Button>
         {canReview && (
           <Button variant="outline" onClick={onJumpToReview}>

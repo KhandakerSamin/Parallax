@@ -235,7 +235,8 @@ export async function listReports(limit = 100): Promise<ReportSummary[]> {
  * Download a report as a PDF (built on the server from the saved result). Errors come
  * back as JSON, so the file is fetched first and saved only when it really is a PDF.
  */
-export async function downloadReportPdf(id: string): Promise<void> {
+/** The server-made PDF report (the same file for Download and Print). */
+async function fetchReportPdf(id: string): Promise<{ blob: Blob; name: string }> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}/reports/${encodeURIComponent(id)}/pdf`, {
@@ -257,7 +258,12 @@ export async function downloadReportPdf(id: string): Promise<void> {
   const disposition = res.headers.get("Content-Disposition") ?? "";
   const name =
     /filename="([^"]+)"/.exec(disposition)?.[1] ?? `Parallax-Report_${id.slice(0, 8)}.pdf`;
-  const url = URL.createObjectURL(await res.blob());
+  return { blob: await res.blob(), name };
+}
+
+export async function downloadReportPdf(id: string): Promise<void> {
+  const { blob, name } = await fetchReportPdf(id);
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = name;
@@ -265,6 +271,53 @@ export async function downloadReportPdf(id: string): Promise<void> {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/**
+ * Prints the same PDF that Download saves, so a printed report and a downloaded one are
+ * identical. The PDF loads in a hidden frame and the browser's print dialog opens on it;
+ * where a browser cannot print a framed PDF, it opens in a new tab to print from there.
+ */
+export async function printReportPdf(id: string): Promise<void> {
+  const { blob } = await fetchReportPdf(id);
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const openInTab = () => {
+    window.open(url, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  };
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  if (isTouch) {
+    openInTab();
+    return;
+  }
+  document.querySelectorAll("iframe[data-report-print]").forEach((f) => f.remove());
+  const frame = document.createElement("iframe");
+  frame.dataset.reportPrint = "";
+  frame.title = "Report PDF for printing";
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0";
+  await new Promise<void>((resolve) => {
+    frame.onload = () => {
+      // The PDF viewer needs a moment after load before it can print.
+      setTimeout(() => {
+        try {
+          frame.contentWindow?.focus();
+          frame.contentWindow?.print();
+        } catch {
+          frame.remove();
+          openInTab();
+        }
+        resolve();
+      }, 400);
+    };
+    frame.src = url;
+    document.body.appendChild(frame);
+  });
+  // Keep the frame while the dialog is open; tidy up much later.
+  setTimeout(() => {
+    frame.remove();
+    URL.revokeObjectURL(url);
+  }, 120_000);
 }
 
 export function getReport(id: string): Promise<SavedReport> {
