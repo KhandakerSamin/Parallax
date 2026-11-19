@@ -20,6 +20,7 @@ import segno
 from fpdf import FPDF
 
 FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
+DIU_LOGO = FONT_DIR.parent / "diu-logo.png"
 DHAKA = timezone(timedelta(hours=6), "Asia/Dhaka")  # Bangladesh has no daylight saving time
 
 PERSPECTIVES = (
@@ -379,11 +380,9 @@ def _cover(pdf: _Doc) -> None:
     pdf.font(8.5)
     pdf.ink(MUTED)
     pdf.cell(80, 4, "See your work from every angle.")
-    pdf.set_xy(pdf.w - pdf.r_margin - 80, 19)
-    pdf.font(8.5)
-    pdf.cell(80, 4, "Daffodil International University", align="R")
-    pdf.set_xy(pdf.w - pdf.r_margin - 80, 23.5)
-    pdf.cell(80, 4, "SE 331 Capstone", align="R")
+    logo_h = 11
+    logo_w = logo_h * 550 / 145  # the logo file's aspect ratio
+    pdf.image(str(DIU_LOGO), x=pdf.w - pdf.r_margin - logo_w, y=18, w=logo_w, h=logo_h)
 
     pdf.set_y(40)
     pdf.font(10, "semi")
