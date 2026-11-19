@@ -71,6 +71,8 @@ export type PdfProgress = {
   onPhase?: (phase: PdfPhase) => void;
   /** Share of the file sent so far, 0–1. */
   onUpload?: (fraction: number) => void;
+  /** Place in the AI service's queue while the job waits (null once it runs). */
+  onQueue?: (position: number | null) => void;
 };
 
 /** A failure that remembers which phase it happened in, so the UI can name the step. */
@@ -175,8 +177,12 @@ export async function analyzePdf(file: File, progress: PdfProgress = {}): Promis
     result?: unknown;
     error?: string;
     error_status?: number;
+    position?: number;
   };
   let current = started.body as Job;
+  const reportQueue = () =>
+    progress.onQueue?.(current.status === "queued" ? (current.position ?? null) : null);
+  reportQueue();
   const deadline = Date.now() + 20 * 60_000;
   while (current.status === "queued" || current.status === "running") {
     if (Date.now() > deadline) {
@@ -198,6 +204,7 @@ export async function analyzePdf(file: File, progress: PdfProgress = {}): Promis
       throw new PdfAnalysisError(aiMessage(poll.status, body), poll.status, "processing");
     }
     current = body as Job;
+    reportQueue();
   }
   if (current.status === "failed") {
     throw new PdfAnalysisError(

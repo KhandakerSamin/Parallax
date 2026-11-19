@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { GAME_KEYS, useStored } from "@/components/analyze/waiting-game/useGameStorage";
 import { useMounted } from "@/components/app/shell/useMounted";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { ConfirmDialog, ErrorState, PageHeader, Panel, Skeleton } from "@/components/app/ui";
@@ -470,6 +471,8 @@ function AppearanceSection() {
   const mounted = useMounted();
   const followsDevice = mounted && theme === "system";
   const current = resolvedTheme === "dark" ? "dark" : "light";
+  const [offer, setOffer] = useStored(GAME_KEYS.offer, "on");
+  const gameOn = offer !== "off";
   return (
     <Panel title="Appearance" description="Light or dark. Remembered in this browser.">
       <div className="border-border flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4">
@@ -493,6 +496,34 @@ function AppearanceSection() {
           Follow my device instead
         </button>
       )}
+      <div className="border-border mt-4 flex items-center justify-between gap-4 rounded-2xl border p-4">
+        <div>
+          <p id="game-offer-label" className="text-sm font-medium">
+            Offer a game while a PDF is being analysed
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            A short, optional game during the 2–3 minute wait. Scores stay in this browser.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={gameOn}
+          aria-labelledby="game-offer-label"
+          onClick={() => setOffer(gameOn ? "off" : "on")}
+          className={cn(
+            "focus-visible:ring-ring relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+            gameOn ? "bg-primary" : "bg-muted-foreground/30",
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform",
+              gameOn && "translate-x-5",
+            )}
+          />
+        </button>
+      </div>
       <p className="text-muted-foreground mt-4 text-xs">
         Animations follow your device&apos;s reduced-motion setting automatically.
       </p>
