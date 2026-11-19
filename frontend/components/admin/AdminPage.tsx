@@ -25,6 +25,7 @@ import { UserAvatar } from "@/components/layout/UserAvatar";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AdminError, getStats, listUsers, updateUser, type AdminUser } from "@/lib/admin/api";
 import { formatDate, relativeTime } from "@/lib/app/format";
@@ -202,29 +203,27 @@ export function AdminPage() {
               className="pl-9"
             />
           </div>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as Role | "")}
+          <Select<Role | "">
             aria-label="Filter by role"
-            className="border-input bg-card h-11 rounded-xl border px-3 text-sm"
-          >
-            <option value="">All roles</option>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {ROLE_LABELS[r]}
-              </option>
-            ))}
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+            value={roleFilter}
+            onValueChange={setRoleFilter}
+            options={[
+              { value: "", label: "All roles" },
+              ...ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] })),
+            ]}
+            className="min-w-40"
+          />
+          <Select<typeof statusFilter>
             aria-label="Filter by status"
-            className="border-input bg-card h-11 rounded-xl border px-3 text-sm"
-          >
-            <option value="">Any status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Deactivated</option>
-          </select>
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            options={[
+              { value: "", label: "Any status" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Deactivated" },
+            ]}
+            className="min-w-36"
+          />
         </div>
 
         {people.status === "loading" && (
@@ -297,23 +296,20 @@ export function AdminPage() {
                       {person.isActive ? "Active" : "Deactivated"}
                     </span>
                     <Locked locked={locked} reason={lockReason}>
-                      <select
+                      <Select<Role>
+                        size="sm"
+                        aria-label={`Role for ${person.name}`}
                         value={person.role}
                         disabled={locked}
-                        onChange={(e) =>
-                          setPending({ kind: "role", person, role: e.target.value as Role })
-                        }
-                        aria-label={`Role for ${person.name}`}
-                        className="border-input bg-card h-9 rounded-lg border px-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {(options.includes(person.role) ? options : [person.role, ...options]).map(
-                          (r) => (
-                            <option key={r} value={r}>
-                              {ROLE_LABELS[r]}
-                            </option>
-                          ),
-                        )}
-                      </select>
+                        onValueChange={(role) => {
+                          if (role !== person.role) setPending({ kind: "role", person, role });
+                        }}
+                        options={(options.includes(person.role)
+                          ? options
+                          : [person.role, ...options]
+                        ).map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
+                        className="h-9 min-w-36 text-sm"
+                      />
                     </Locked>
                   </div>
                   <div className="md:text-right">

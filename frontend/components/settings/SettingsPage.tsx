@@ -15,6 +15,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   AccountError,
   changePassword,
@@ -149,18 +150,13 @@ function ProfileSection({ user }: { user: User }) {
             <label htmlFor="profile-department" className="mb-1.5 block text-sm font-medium">
               Department
             </label>
-            <select
+            <Select
               id="profile-department"
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="border-input bg-card h-11 w-full rounded-xl border px-3 text-sm"
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onValueChange={setDepartment}
+              options={DEPARTMENTS.map((d) => ({ value: d, label: d }))}
+              className="w-full"
+            />
           </div>
         </div>
         <dl className="border-border grid gap-3 rounded-2xl border p-4 text-sm sm:grid-cols-3">
