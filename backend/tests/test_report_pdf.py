@@ -1,5 +1,7 @@
 """The downloadable PDF report: same access as the report page, a real PDF, no corpus authors."""
 
+from urllib.parse import unquote
+
 import httpx
 import pytest
 
@@ -89,7 +91,9 @@ def test_owner_downloads_a_pdf(client, report_id):
     assert response.content.startswith(b"%PDF")
     disposition = response.headers["content-disposition"]
     assert disposition.startswith("attachment;")
-    assert 'filename="Parallax-Report_report_' in disposition  # a Bangla title has no ASCII slug
+    assert 'filename="Parallax-Report_report_' in disposition  # the ASCII fallback for a Bangla title
+    full = unquote(disposition.split("filename*=UTF-8''", 1)[1])
+    assert full.startswith("Parallax-Report_ডেটা-ভারসাম্যহীনতা_") and full.endswith(".pdf")
     assert response.headers["cache-control"] == "private, no-store"
 
 
@@ -241,3 +245,19 @@ def test_a_long_source_title_never_overlaps_the_line_below(monkeypatch):
     _, title_top, title_bottom = next(s for s in reversed(spans[:meta]) if s[0] == long_title)
     assert title_bottom - title_top > 10  # the title really wraps onto a second line
     assert spans[meta][1] >= title_bottom
+
+
+def test_file_names_keep_bangla_and_cut_at_a_word():
+    assert report_pdf.filename("ডেটা ভারসাম্যহীনতা: IL-4 পেপটাইড", None).startswith(
+        "Parallax-Report_ডেটা-ভারসাম্যহীনতা-IL-4-পেপটাইড_"
+    )
+    assert report_pdf.filename("ডেটা ভারসাম্যহীনতা", None, ascii_only=True).startswith("Parallax-Report_report_")
+    long = report_pdf.filename("Analyzing the Usability of Mobile Banking Apps for Elderly Users in Bangladesh", None)
+    slug = long.removeprefix("Parallax-Report_").rsplit("_", 1)[0]
+    assert len(slug) <= 60 and slug.endswith("-Elderly")  # whole words only
+
+
+def test_an_english_title_needs_no_utf8_name():
+    header = report_pdf.content_disposition("Restaurant Management System", None)
+    assert "filename*" not in header
+    assert header.startswith('attachment; filename="Parallax-Report_Restaurant-Management-System_')
