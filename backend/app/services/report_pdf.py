@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import segno
 from fpdf import FPDF
@@ -112,10 +113,25 @@ def fingerprint(result: dict[str, Any]) -> str:
     return " ".join(digest[i : i + 4] for i in range(0, 16, 4))
 
 
-def filename(title: str, created: datetime | None) -> str:
-    slug = re.sub(r"[^A-Za-z0-9]+", "-", title or "").strip("-")[:60] or "report"
+def filename(title: str, created: datetime | None, *, ascii_only: bool = False) -> str:
+    """Parallax-Report_<title>_<date>.pdf. Bangla letters are kept unless `ascii_only`
+    (the fallback name for browsers that ignore the UTF-8 one)."""
+    allowed = r"A-Za-z0-9" if ascii_only else r"A-Za-z0-9ঀ-৿"
+    slug = re.sub(rf"[^{allowed}]+", "-", title or "").strip("-")
+    if len(slug) > 60:  # cut at a word boundary, never inside a Bangla letter cluster
+        slug = slug[:61].rsplit("-", 1)[0] if "-" in slug[:61] else slug[:60]
+    slug = slug.strip("-") or "report"
     day = (created or datetime.now(timezone.utc)).astimezone(DHAKA).strftime("%Y-%m-%d")
     return f"Parallax-Report_{slug}_{day}.pdf"
+
+
+def content_disposition(title: str, created: datetime | None) -> str:
+    """An attachment header that keeps a Bangla title (RFC 6266 filename*), with an ASCII fallback."""
+    plain = filename(title, created, ascii_only=True)
+    full = filename(title, created)
+    if full == plain:
+        return f'attachment; filename="{plain}"'
+    return f"attachment; filename=\"{plain}\"; filename*=UTF-8''{quote(full)}"
 
 
 @dataclass
