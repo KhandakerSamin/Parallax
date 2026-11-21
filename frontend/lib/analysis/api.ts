@@ -242,6 +242,22 @@ export async function listReports(limit = 100): Promise<ReportSummary[]> {
  * Download a report as a PDF (built on the server from the saved result). Errors come
  * back as JSON, so the file is fetched first and saved only when it really is a PDF.
  */
+/**
+ * The file name from a Content-Disposition header. Prefers the UTF-8 `filename*`, which
+ * keeps a Bangla title, over the plain ASCII fallback.
+ */
+export function fileNameFrom(disposition: string): string | null {
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  if (utf8) {
+    try {
+      return decodeURIComponent(utf8.trim());
+    } catch {
+      // A malformed name: fall back to the plain one.
+    }
+  }
+  return /filename="([^"]+)"/i.exec(disposition)?.[1] ?? null;
+}
+
 /** The server-made PDF report (the same file for Download and Print). */
 async function fetchReportPdf(id: string): Promise<{ blob: Blob; name: string }> {
   let res: Response;
@@ -262,9 +278,9 @@ async function fetchReportPdf(id: string): Promise<{ blob: Blob; name: string }>
           : "The PDF could not be created. Please try again.";
     throw new AnalysisError(message, res.status);
   }
-  const disposition = res.headers.get("Content-Disposition") ?? "";
   const name =
-    /filename="([^"]+)"/.exec(disposition)?.[1] ?? `Parallax-Report_${id.slice(0, 8)}.pdf`;
+    fileNameFrom(res.headers.get("Content-Disposition") ?? "") ??
+    `Parallax-Report_${id.slice(0, 8)}.pdf`;
   return { blob: await res.blob(), name };
 }
 
