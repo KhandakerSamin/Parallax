@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileText,
   Gamepad2,
+  Keyboard,
   Loader2,
   Minus,
   RefreshCw,
@@ -47,6 +48,7 @@ export default function WaitingGameWindow({
   const [sound, setSound] = useStored(GAME_KEYS.sound, "off");
   const soundOn = sound === "on";
   const [message, setMessage] = useState("");
+  const [showKeys, setShowKeys] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const ready = job.status === "ready";
   const failed = job.status === "failed";
@@ -81,7 +83,13 @@ export default function WaitingGameWindow({
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      onMinimise();
+      if (showKeys) setShowKeys(false);
+      else onMinimise();
+      return;
+    }
+    if (event.key === "?") {
+      event.preventDefault();
+      setShowKeys((open) => !open);
       return;
     }
     if (event.key !== "Tab" || !dialogRef.current) return;
@@ -148,11 +156,14 @@ export default function WaitingGameWindow({
             job={job}
             soundOn={soundOn}
             onSound={() => setSound(soundOn ? "off" : "on")}
+            showKeys={showKeys}
+            onKeys={() => setShowKeys((open) => !open)}
             onMinimise={onMinimise}
             onClose={onClose}
             showReadyPill={ready && keepPlaying}
             onViewReport={onViewReport}
           />
+          {showKeys && <KeyboardHelp onClose={() => setShowKeys(false)} />}
 
           <AnimatePresence initial={false}>
             {ready && !keepPlaying && (
@@ -226,6 +237,8 @@ function Header({
   job,
   soundOn,
   onSound,
+  showKeys,
+  onKeys,
   onMinimise,
   onClose,
   showReadyPill,
@@ -234,6 +247,8 @@ function Header({
   job: JobView;
   soundOn: boolean;
   onSound: () => void;
+  showKeys: boolean;
+  onKeys: () => void;
   onMinimise: () => void;
   onClose: () => void;
   showReadyPill: boolean;
@@ -260,6 +275,9 @@ function Header({
           </button>
         )}
         <div className="ml-auto flex items-center gap-1">
+          <IconButton label="Keyboard shortcuts (?)" pressed={showKeys} onClick={onKeys}>
+            <Keyboard className="size-4" />
+          </IconButton>
           <IconButton
             label={soundOn ? "Turn sound off" : "Turn sound on"}
             pressed={soundOn}
@@ -311,6 +329,55 @@ function Header({
         </p>
       </div>
     </div>
+  );
+}
+
+const SHORTCUTS: [string, string[]][] = [
+  ["Parallax Pairs", ["Arrow keys: move between cards", "Enter or Space: flip the card"]],
+  ["Same Meaning?", ["S: same meaning", "D: different meaning"]],
+  [
+    "Anywhere",
+    ["Esc: minimise the game", "?: show or hide these shortcuts", "Tab: move between buttons"],
+  ],
+];
+
+function KeyboardHelp({ onClose }: { onClose: () => void }) {
+  return (
+    <section
+      aria-labelledby="game-keys-title"
+      className="border-border bg-muted/40 border-b px-4 py-3 sm:px-6"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h3 id="game-keys-title" className="text-sm font-semibold">
+          Keyboard shortcuts
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-brand focus-visible:ring-ring cursor-pointer rounded text-xs font-medium outline-none hover:underline focus-visible:ring-2"
+        >
+          Hide
+        </button>
+      </div>
+      <dl className="mt-2 grid gap-3 text-xs sm:grid-cols-3">
+        {SHORTCUTS.map(([game, keys]) => (
+          <div key={game}>
+            <dt className="text-muted-foreground font-medium">{game}</dt>
+            {keys.map((line) => {
+              const [key, what] = line.split(": ");
+              return (
+                <dd key={line} className="mt-1 flex items-center gap-2">
+                  <kbd className="border-border bg-card rounded border px-1.5 py-0.5 font-mono text-[11px]">
+                    {key}
+                  </kbd>
+                  <span>{what}</span>
+                </dd>
+              );
+            })}
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
