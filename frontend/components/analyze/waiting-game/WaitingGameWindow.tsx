@@ -303,8 +303,8 @@ function Header({
               ? "Report saved"
               : job.status === "failed"
                 ? "Analysis stopped"
-                : job.position
-                  ? `Waiting in line: #${job.position}`
+                : job.position !== null
+                  ? queueLabel(job.position)
                   : job.step}
           </span>
           <span className="tabular-nums">· {formatClock(job.elapsed)} elapsed</span>
@@ -312,6 +312,12 @@ function Header({
       </div>
     </div>
   );
+}
+
+/** The AI service counts the analyses ahead of this one; 0 means it starts next. */
+export function queueLabel(ahead: number): string {
+  if (ahead <= 0) return "Next in line";
+  return `Waiting in line · ${ahead} ${ahead === 1 ? "report" : "reports"} ahead`;
 }
 
 function IconButton({

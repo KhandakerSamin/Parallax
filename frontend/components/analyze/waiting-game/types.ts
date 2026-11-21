@@ -12,7 +12,7 @@ export type JobView = {
   progress: number;
   /** Seconds since the analysis started. */
   elapsed: number;
-  /** Place in the AI service's queue while waiting, otherwise null. */
+  /** While queued, how many analyses are ahead of this one (0 = next); otherwise null. */
   position: number | null;
   reportId: string | null;
   title: string;

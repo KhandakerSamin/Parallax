@@ -67,7 +67,7 @@ type Run =
       upload: number;
       startedAt: number;
       processingAt: number | null;
-      /** Place in the AI service's queue, while waiting. */
+      /** While queued, how many analyses are ahead of this one (0 = next). */
       position: number | null;
     }
   | {
@@ -768,6 +768,13 @@ function ProgressPanel({
               {mode === "pdf" ? "Usually 2–3 minutes." : "Usually 15–20 seconds."} You can keep
               working in another tab, but keep this one open until the report is saved.
             </p>
+            {runningState?.position != null && runningState.position > 0 && (
+              <p className="text-brand mt-2 text-sm font-medium">
+                {runningState.position === 1
+                  ? "One report is being analysed before yours; yours starts right after it."
+                  : `${runningState.position} reports are ahead of yours in the queue.`}
+              </p>
+            )}
           </div>
           <span className="bg-muted rounded-full px-3 py-1 font-mono text-sm tabular-nums">
             {minutes}:{seconds}
