@@ -1,7 +1,7 @@
 "use client";
 
 import { BookOpenCheck, GraduationCap } from "lucide-react";
-import type { ComponentProps } from "react";
+import { Select } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/lib/auth/config";
 import type { SELF_SIGNUP_ROLES } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";
@@ -74,18 +74,28 @@ export function RoleField({ name, value, onChange, disabled }: RoleFieldProps) {
   );
 }
 
-const selectClass =
-  "h-11 w-full cursor-pointer rounded-xl border border-input bg-card px-3.5 text-base text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_color-mix(in_oklab,var(--ring)_22%,transparent)] aria-invalid:border-danger md:text-sm";
-
-/** Department dropdown; spread react-hook-form's register() result into it. */
-export function DepartmentSelect({ className, ...props }: ComponentProps<"select">) {
+/** Department picker: the same dropdown as the dashboard. Use it through a react-hook-form Controller. */
+export function DepartmentSelect({
+  value,
+  onChange,
+  ...props
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  name?: string;
+  id?: string;
+  disabled?: boolean;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
+}) {
   return (
-    <select className={cn(selectClass, className)} {...props}>
-      {DEPARTMENTS.map((d) => (
-        <option key={d} value={d}>
-          {d}
-        </option>
-      ))}
-    </select>
+    <Select
+      value={value}
+      onValueChange={onChange}
+      options={DEPARTMENTS.map((d) => ({ value: d, label: d }))}
+      className="w-full text-base md:text-sm"
+      {...props}
+    />
   );
 }

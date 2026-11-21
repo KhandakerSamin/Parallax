@@ -23,6 +23,10 @@ export function Select<T extends string>({
   className,
   contentClassName,
   "aria-label": ariaLabel,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
+  name,
+  onBlur,
 }: {
   value: T;
   onValueChange: (value: T) => void;
@@ -33,6 +37,11 @@ export function Select<T extends string>({
   className?: string;
   contentClassName?: string;
   "aria-label"?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
+  /** Submitted with a surrounding form, like a native select's name. */
+  name?: string;
+  onBlur?: () => void;
 }) {
   const encode = (v: string) => (v === "" ? EMPTY : v);
   return (
@@ -40,16 +49,20 @@ export function Select<T extends string>({
       value={encode(value)}
       onValueChange={(v) => onValueChange((v === EMPTY ? "" : v) as T)}
       disabled={disabled}
+      name={name}
     >
       <SelectPrimitive.Trigger
         id={id}
         aria-label={ariaLabel}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedBy}
+        onBlur={onBlur}
         className={cn(
           "group border-input bg-card text-foreground inline-flex cursor-pointer items-center justify-between gap-2 border text-left whitespace-nowrap shadow-xs outline-none",
           "hover:border-ring/60 hover:bg-muted/40 transition-[border-color,box-shadow,background-color]",
           "focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_color-mix(in_oklab,var(--ring)_22%,transparent)]",
           "data-[state=open]:border-ring data-[state=open]:shadow-[0_0_0_4px_color-mix(in_oklab,var(--ring)_18%,transparent)]",
-          "disabled:cursor-not-allowed disabled:opacity-60",
+          "aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-60",
           size === "sm" ? "h-8 rounded-lg px-2.5 text-xs" : "h-11 rounded-xl px-3.5 text-sm",
           className,
         )}
