@@ -103,12 +103,11 @@ def download_report_pdf(report_id: str, user: CurrentUser, db: DbSession) -> Res
         result=report.result,
         report_url=f"{get_settings().public_url.rstrip('/')}/dashboard/reports/{report.id}",
     )
-    name = report_pdf.filename(report.title, report.created_at)
     return Response(
         content=report_pdf.render(context),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="{name}"',
+            "Content-Disposition": report_pdf.content_disposition(report.title, report.created_at),
             "Cache-Control": "private, no-store",
         },
     )

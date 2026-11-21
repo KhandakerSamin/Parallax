@@ -15,11 +15,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import segno
 from fpdf import FPDF
 
 FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
+DIU_LOGO = FONT_DIR.parent / "diu-logo.png"
 DHAKA = timezone(timedelta(hours=6), "Asia/Dhaka")  # Bangladesh has no daylight saving time
 
 PERSPECTIVES = (
@@ -111,10 +113,25 @@ def fingerprint(result: dict[str, Any]) -> str:
     return " ".join(digest[i : i + 4] for i in range(0, 16, 4))
 
 
-def filename(title: str, created: datetime | None) -> str:
-    slug = re.sub(r"[^A-Za-z0-9]+", "-", title or "").strip("-")[:60] or "report"
+def filename(title: str, created: datetime | None, *, ascii_only: bool = False) -> str:
+    """Parallax-Report_<title>_<date>.pdf. Bangla letters are kept unless `ascii_only`
+    (the fallback name for browsers that ignore the UTF-8 one)."""
+    allowed = r"A-Za-z0-9" if ascii_only else r"A-Za-z0-9ঀ-৿"
+    slug = re.sub(rf"[^{allowed}]+", "-", title or "").strip("-")
+    if len(slug) > 60:  # cut at a word boundary, never inside a Bangla letter cluster
+        slug = slug[:61].rsplit("-", 1)[0] if "-" in slug[:61] else slug[:60]
+    slug = slug.strip("-") or "report"
     day = (created or datetime.now(timezone.utc)).astimezone(DHAKA).strftime("%Y-%m-%d")
     return f"Parallax-Report_{slug}_{day}.pdf"
+
+
+def content_disposition(title: str, created: datetime | None) -> str:
+    """An attachment header that keeps a Bangla title (RFC 6266 filename*), with an ASCII fallback."""
+    plain = filename(title, created, ascii_only=True)
+    full = filename(title, created)
+    if full == plain:
+        return f'attachment; filename="{plain}"'
+    return f"attachment; filename=\"{plain}\"; filename*=UTF-8''{quote(full)}"
 
 
 @dataclass
@@ -379,11 +396,9 @@ def _cover(pdf: _Doc) -> None:
     pdf.font(8.5)
     pdf.ink(MUTED)
     pdf.cell(80, 4, "See your work from every angle.")
-    pdf.set_xy(pdf.w - pdf.r_margin - 80, 19)
-    pdf.font(8.5)
-    pdf.cell(80, 4, "Daffodil International University", align="R")
-    pdf.set_xy(pdf.w - pdf.r_margin - 80, 23.5)
-    pdf.cell(80, 4, "SE 331 Capstone", align="R")
+    logo_h = 11
+    logo_w = logo_h * 550 / 145  # the logo file's aspect ratio
+    pdf.image(str(DIU_LOGO), x=pdf.w - pdf.r_margin - logo_w, y=18, w=logo_w, h=logo_h)
 
     pdf.set_y(40)
     pdf.font(10, "semi")
@@ -706,6 +721,7 @@ def _source_section(pdf: _Doc, rank: int, match: dict[str, Any]) -> None:
     title = _clean(source.get("title") or "Untitled")
     pdf.multi_cell(pdf.content_w - 30, pdf.line_h(13.5, title) * 0.9, title, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(1.2)
+    title_bottom = pdf.get_y()  # a long title wraps; what follows starts below it
     top = y + 3.8
     pdf.set_xy(pdf.w - pdf.r_margin - 30, top)
     pdf.font(18, "semi")
@@ -714,7 +730,7 @@ def _source_section(pdf: _Doc, rank: int, match: dict[str, Any]) -> None:
     pdf.font(7.8)
     pdf.ink(MUTED)
     pdf.cell(30, 4, "hybrid score", align="R")
-    pdf.set_y(max(pdf.get_y(), top + 14))
+    pdf.set_y(max(title_bottom, top + 14))
     meta = " · ".join(str(v) for v in (source.get("year"), source.get("type")) if v)
     if meta:
         pdf.para(meta, 9, MUTED)

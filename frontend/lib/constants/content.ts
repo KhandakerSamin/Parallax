@@ -391,20 +391,26 @@ export const ROLES = [
     color: "var(--concept)",
     points: [
       "Inspect matches and compare sections",
-      "Record a decision: acceptable, needs revision, or needs investigation",
+      "Record a decision, no concern or needs follow-up, with a note",
     ],
   },
   {
     icon: SplitSquareHorizontal,
     role: "Researcher",
     color: "var(--lexical)",
-    points: ["Annotate document pairs", "Compare models and view evaluation metrics"],
+    points: [
+      "Analyze documents and read the evidence",
+      "Evaluate the engine on planted reuse and labelled pairs",
+    ],
   },
   {
     icon: UserCog,
     role: "Admin",
     color: "var(--structural)",
-    points: ["Manage corpus, models and weights", "Manage users and review audit logs"],
+    points: [
+      "See usage numbers, find people and change roles",
+      "Deactivate accounts that should no longer sign in",
+    ],
   },
 ] as const;
 
@@ -453,8 +459,8 @@ export const RESPONSIBLE = {
       body: "People only see the documents and results their role allows.",
     },
     {
-      title: "Author anonymisation",
-      body: "Author identities can be hidden while a match is being reviewed.",
+      title: "Source authors not shown",
+      body: "Matching DIU reports are named by title; their authors never appear in results or PDF reports.",
     },
     {
       title: "Attribution & permission",
@@ -485,7 +491,7 @@ export const FAQ = [
   },
   {
     q: "Who can see my document?",
-    a: "Access is role-based. Your uploads are visible to you and to reviewers assigned to them, and author details can be anonymised during review.",
+    a: "Access is role-based. Your reports are visible to you and to reviewers and admins, never to other students. The authors of matching DIU reports are not shown.",
   },
   {
     q: "How is the score calculated?",
@@ -493,7 +499,7 @@ export const FAQ = [
   },
   {
     q: "Can reviewers override results?",
-    a: "Yes. Reviewers inspect each match and record their own decision: acceptable, needs revision, or needs investigation. The score informs that decision but never replaces it.",
+    a: "Yes. Reviewers read the evidence and record their own decision, no concern or needs follow-up, with a note the student sees. The score informs that decision but never replaces it.",
   },
 ] as const;
 

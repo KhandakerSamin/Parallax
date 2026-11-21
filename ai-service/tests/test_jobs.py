@@ -97,3 +97,52 @@ def test_the_queue_reports_failures_and_positions():
     assert first.status == "done"
     assert (second.status, second.error, second.error_status) == ("failed", "nope", 422)
     assert q.get(first.id, "someone-else") is None
+
+
+def test_queue_position_counts_the_jobs_ahead():
+    import threading
+
+    queue = JobQueue(workers=1)
+    release = threading.Event()
+    first = queue.submit("u-1", lambda: release.wait(5) and {"ok": 1})
+    second = queue.submit("u-2", lambda: {"ok": 2})
+    third = queue.submit("u-3", lambda: {"ok": 3})
+    deadline = time.time() + 5
+    while first.status != "running" and time.time() < deadline:
+        time.sleep(0.01)
+
+    assert queue.position(first) is None  # running, not waiting
+    assert queue.position(second) == 1  # one job ahead of it
+    assert queue.position(third) == 2
+
+    release.set()
+    deadline = time.time() + 5
+    while third.status != "done" and time.time() < deadline:
+        time.sleep(0.01)
+    assert third.status == "done"
+    assert queue.position(third) is None
+
+
+def test_job_status_reports_the_position_only_while_queued(client, monkeypatch):
+    import threading
+
+    release = threading.Event()
+    real_submit = routes.queue.submit
+
+    def slow_first(owner, work):
+        return real_submit(owner, lambda: (release.wait(5), work())[1])
+
+    monkeypatch.setattr(routes.queue, "submit", slow_first)
+    files = {"file": ("report.pdf", pdf_bytes(FARMING), "application/pdf")}
+    a = {"X-Parallax-Ticket": ticket("u-1")}
+    b = {"X-Parallax-Ticket": ticket("u-2")}
+    first = client.post("/jobs", files=files, headers=a).json()
+    second = client.post("/jobs", files=files, headers=b).json()
+
+    waiting = client.get(f"/jobs/{second['id']}", headers=b).json()
+    assert waiting["status"] == "queued" and waiting["position"] == 1
+
+    release.set()
+    done = wait(lambda: client.get(f"/jobs/{second['id']}", headers=b).json())
+    assert done["status"] == "done" and "position" not in done
+    assert wait(lambda: client.get(f"/jobs/{first['id']}", headers=a).json())["status"] == "done"

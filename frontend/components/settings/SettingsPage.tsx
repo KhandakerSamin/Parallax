@@ -5,7 +5,9 @@ import { useTheme } from "next-themes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { THEME_OPTIONS, useMounted } from "@/components/app/shell/ThemeMenu";
+import { GAME_KEYS, useStored } from "@/components/analyze/waiting-game/useGameStorage";
+import { useMounted } from "@/components/app/shell/useMounted";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { ConfirmDialog, ErrorState, PageHeader, Panel, Skeleton } from "@/components/app/ui";
 import { GoogleMark } from "@/components/auth/GoogleButton";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -15,6 +17,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   AccountError,
   changePassword,
@@ -149,18 +152,13 @@ function ProfileSection({ user }: { user: User }) {
             <label htmlFor="profile-department" className="mb-1.5 block text-sm font-medium">
               Department
             </label>
-            <select
+            <Select
               id="profile-department"
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="border-input bg-card h-11 w-full rounded-xl border px-3 text-sm"
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onValueChange={setDepartment}
+              options={DEPARTMENTS.map((d) => ({ value: d, label: d }))}
+              className="w-full"
+            />
           </div>
         </div>
         <dl className="border-border grid gap-3 rounded-2xl border p-4 text-sm sm:grid-cols-3">
@@ -469,35 +467,62 @@ function ConnectedSection({ user }: { user: User }) {
 }
 
 function AppearanceSection() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
+  const followsDevice = mounted && theme === "system";
+  const current = resolvedTheme === "dark" ? "dark" : "light";
+  const [offer, setOffer] = useStored(GAME_KEYS.offer, "on");
+  const gameOn = offer !== "off";
   return (
-    <Panel
-      title="Appearance"
-      description="Light, dark, or follow your device. Remembered in this browser."
-    >
-      <div role="radiogroup" aria-label="Theme" className="grid gap-3 sm:grid-cols-3">
-        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
-          const active = mounted && theme === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => setTheme(value)}
-              className={cn(
-                "flex cursor-pointer flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-colors",
-                active
-                  ? "border-primary/50 bg-semantic-soft/50 ring-primary/20 ring-2"
-                  : "border-border hover:bg-muted/50",
-              )}
-            >
-              <Icon className="size-5" aria-hidden />
-              <span className="text-sm font-medium">{label}</span>
-            </button>
-          );
-        })}
+    <Panel title="Appearance" description="Light or dark. Remembered in this browser.">
+      <div className="border-border flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4">
+        <div>
+          <p className="text-sm font-medium">Dark mode</p>
+          <p className="text-muted-foreground mt-0.5 min-h-4 text-xs">
+            {mounted &&
+              (followsDevice
+                ? `Following your device (${current} right now).`
+                : `The ${current} theme, chosen by you.`)}
+          </p>
+        </div>
+        <ThemeToggle />
+      </div>
+      {mounted && !followsDevice && (
+        <button
+          type="button"
+          onClick={() => setTheme("system")}
+          className="text-brand mt-3 cursor-pointer text-xs font-medium hover:underline"
+        >
+          Follow my device instead
+        </button>
+      )}
+      <div className="border-border mt-4 flex items-center justify-between gap-4 rounded-2xl border p-4">
+        <div>
+          <p id="game-offer-label" className="text-sm font-medium">
+            Offer a game while a PDF is being analysed
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            A short, optional game during the 2–3 minute wait. Scores stay in this browser.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={gameOn}
+          aria-labelledby="game-offer-label"
+          onClick={() => setOffer(gameOn ? "off" : "on")}
+          className={cn(
+            "focus-visible:ring-ring relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+            gameOn ? "bg-primary" : "bg-muted-foreground/30",
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform",
+              gameOn && "translate-x-5",
+            )}
+          />
+        </button>
       </div>
       <p className="text-muted-foreground mt-4 text-xs">
         Animations follow your device&apos;s reduced-motion setting automatically.

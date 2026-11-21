@@ -28,10 +28,13 @@ import {
   PdfAnalysisError,
   type PdfPhase,
 } from "@/lib/analysis/api";
-import { AnalysisError } from "@/lib/analysis/types";
+import { AnalysisError, type AnalysisResult, type SimilarityLevel } from "@/lib/analysis/types";
 import { LANGUAGE_LABELS, detectLanguage, fileSize, langProps, wordCount } from "@/lib/app/format";
 import { CORPUS, PERSPECTIVES } from "@/lib/app/terms";
 import { cn } from "@/lib/utils";
+import type { JobView } from "./waiting-game/types";
+import { gameOffered } from "./waiting-game/useGameStorage";
+import { WaitingGame, WaitingGameInvite } from "./waiting-game/WaitingGame";
 
 type Mode = "pdf" | "text";
 
@@ -64,9 +67,28 @@ type Run =
       upload: number;
       startedAt: number;
       processingAt: number | null;
+      /** While queued, how many analyses are ahead of this one (0 = next). */
+      position: number | null;
     }
-  | { state: "failed"; mode: Mode; message: string; step: string }
-  | { state: "saved"; reportId: string };
+  | {
+      state: "failed";
+      mode: Mode;
+      message: string;
+      step: string;
+      startedAt: number;
+      endedAt: number;
+    }
+  | {
+      state: "saved";
+      reportId: string;
+      title: string;
+      level: SimilarityLevel | null;
+      startedAt: number;
+      endedAt: number;
+    };
+
+/** The optional waiting game: not offered, inviting, open, or minimised to a pill. */
+type GameState = "none" | "invite" | "open" | "min";
 
 export function AnalyzePage() {
   const params = useSearchParams();
@@ -80,6 +102,16 @@ export function AnalyzePage() {
   const [title, setTitle] = useState("");
   const [run, setRun] = useState<Run>({ state: "idle" });
   const running = run.state === "running";
+  const [game, setGame] = useState<GameState>("none");
+  const playing = game === "open" || game === "min";
+  // Read by async callbacks (the job outlives a render), so they see the latest values.
+  const gameRef = useRef<GameState>("none");
+  const runRef = useRef<Run>(run);
+  useEffect(() => {
+    gameRef.current = game;
+    runRef.current = run;
+  }, [game, run]);
+  const now = useNow(playing && running);
 
   function setMode(next: Mode) {
     router.replace(`${pathname}?mode=${next}`, { scroll: false });
@@ -98,9 +130,24 @@ export function AnalyzePage() {
   async function start() {
     const startedAt = clock();
     if (mode === "pdf" && file) {
-      setRun({ state: "running", mode, phase: "ticket", upload: 0, startedAt, processingAt: null });
+      setRun({
+        state: "running",
+        mode,
+        phase: "ticket",
+        upload: 0,
+        startedAt,
+        processingAt: null,
+        position: null,
+      });
+      // Offer the game about a second in (PDF only: text finishes in 15–20 seconds).
+      if (gameRef.current === "none" && gameOffered()) {
+        window.setTimeout(() => {
+          if (runRef.current.state === "running" && gameRef.current === "none") setGame("invite");
+        }, 1000);
+      }
       try {
         const result = await analyzePdf(file, {
+          onQueue: (position) => setRun((r) => (r.state === "running" ? { ...r, position } : r)),
           onPhase: (phase) =>
             setRun((r) =>
               r.state === "running"
@@ -113,7 +160,7 @@ export function AnalyzePage() {
             ),
           onUpload: (upload) => setRun((r) => (r.state === "running" ? { ...r, upload } : r)),
         });
-        finish(result.report_id);
+        finish(result, file.name, startedAt);
       } catch (err) {
         fail(err, "pdf", startedAt);
       }
@@ -125,28 +172,59 @@ export function AnalyzePage() {
         upload: 1,
         startedAt,
         processingAt: startedAt,
+        position: null,
       });
       try {
-        const result = await analyzeText(text.trim(), title.trim() || "Untitled text");
-        finish(result.report_id);
+        const name = title.trim() || "Untitled text";
+        const result = await analyzeText(text.trim(), name);
+        finish(result, name, startedAt);
       } catch (err) {
         fail(err, "text", startedAt);
       }
     }
   }
 
-  function finish(reportId: string | undefined) {
+  function finish(result: AnalysisResult, name: string, startedAt: number) {
+    const reportId = result.report_id;
     if (!reportId) {
       setRun({
         state: "failed",
         mode,
         message: "The analysis finished but the report could not be saved. Please try again.",
         step: "Saving the report",
+        startedAt,
+        endedAt: Date.now(),
       });
       return;
     }
-    setRun({ state: "saved", reportId });
+    setRun({
+      state: "saved",
+      reportId,
+      title: name,
+      level: result.summary?.level ?? null,
+      startedAt,
+      endedAt: Date.now(),
+    });
+    // While the game is open (or minimised) the player decides when to leave.
+    const current = gameRef.current;
+    if (current === "open" || current === "min") return;
+    if (current === "invite") setGame("none");
     setTimeout(() => router.push(`/dashboard/reports/${reportId}`), 900);
+  }
+
+  function viewReport() {
+    if (run.state !== "saved") return;
+    setGame("none");
+    router.push(`/dashboard/reports/${run.reportId}`);
+  }
+
+  function closeGame() {
+    setGame("none");
+    // Closing after the report is saved continues the normal flow: open it.
+    if (run.state === "saved") {
+      const id = run.reportId;
+      setTimeout(() => router.push(`/dashboard/reports/${id}`), 300);
+    }
   }
 
   function fail(err: unknown, failedMode: Mode, startedAt: number) {
@@ -165,7 +243,8 @@ export function AnalyzePage() {
     } else {
       step = activeStep(TEXT_STEPS, (Date.now() - startedAt) / 1000).label;
     }
-    setRun({ state: "failed", mode: failedMode, message, step });
+    setRun({ state: "failed", mode: failedMode, message, step, startedAt, endedAt: Date.now() });
+    if (gameRef.current === "invite") setGame("none");
   }
 
   return (
@@ -177,7 +256,7 @@ export function AnalyzePage() {
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">
           {run.state === "running" || run.state === "saved" ? (
-            <ProgressPanel run={run} />
+            <ProgressPanel run={run} autoOpen={!playing} onViewReport={viewReport} />
           ) : (
             <Panel bodyClassName="p-5 sm:p-6">
               <ModeSwitch mode={mode} onChange={setMode} />
@@ -213,8 +292,83 @@ export function AnalyzePage() {
           <ChecksGuide />
         </aside>
       </div>
+
+      {mode === "pdf" && (
+        <WaitingGameInvite
+          open={game === "invite"}
+          onPlay={() => setGame("open")}
+          onDecline={() => setGame("none")}
+        />
+      )}
+      {playing && (
+        <WaitingGame
+          job={jobView(run, now)}
+          minimised={game === "min"}
+          onMinimise={() => setGame("min")}
+          onRestore={() => setGame("open")}
+          onClose={closeGame}
+          onViewReport={viewReport}
+          onRetry={start}
+        />
+      )}
     </div>
   );
+}
+
+/** The read-only snapshot of the analysis that the waiting game shows. */
+function jobView(run: Run, now: number): JobView {
+  const base = {
+    reportId: null,
+    title: "",
+    level: null,
+    error: null,
+    position: null,
+  } satisfies Partial<JobView>;
+  if (run.state === "saved") {
+    return {
+      ...base,
+      status: "ready",
+      step: "Report saved",
+      progress: 1,
+      elapsed: Math.round((run.endedAt - run.startedAt) / 1000),
+      reportId: run.reportId,
+      title: run.title,
+      level: run.level,
+    };
+  }
+  if (run.state === "failed") {
+    return {
+      ...base,
+      status: "failed",
+      step: run.step,
+      progress: 1,
+      elapsed: Math.round((run.endedAt - run.startedAt) / 1000),
+      error: { step: run.step, message: run.message },
+    };
+  }
+  if (run.state !== "running") {
+    return { ...base, status: "running", step: "Starting…", progress: 0, elapsed: 0 };
+  }
+  const elapsed = Math.max(0, Math.floor((now - run.startedAt) / 1000));
+  let step: string;
+  let progress: number;
+  if (run.phase === "ticket") {
+    step = "Preparing a secure upload";
+    progress = 0.02;
+  } else if (run.phase === "uploading") {
+    step = `Uploading the PDF · ${Math.round(run.upload * 100)}%`;
+    progress = 0.02 + run.upload * 0.08;
+  } else if (run.phase === "saving") {
+    step = "Checking the signature and saving the report";
+    progress = 0.97;
+  } else {
+    const processingFor = run.processingAt ? Math.max(0, (now - run.processingAt) / 1000) : 0;
+    const steps = run.mode === "pdf" ? PDF_STEPS : TEXT_STEPS;
+    step = activeStep(steps, processingFor).label;
+    // An estimate: about 150 s of processing, eased so it never sits at 100%.
+    progress = 0.1 + 0.85 * (1 - Math.exp(-processingFor / 80));
+  }
+  return { ...base, status: "running", step, progress, elapsed, position: run.position };
 }
 
 function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => void }) {
@@ -553,7 +707,15 @@ function FailureNotice({
   );
 }
 
-function ProgressPanel({ run }: { run: Extract<Run, { state: "running" } | { state: "saved" }> }) {
+function ProgressPanel({
+  run,
+  autoOpen,
+  onViewReport,
+}: {
+  run: Extract<Run, { state: "running" } | { state: "saved" }>;
+  autoOpen: boolean;
+  onViewReport: () => void;
+}) {
   const reduced = useReducedMotion();
   const runningState = run.state === "running" ? run : null;
   const now = useNow(run.state === "running");
@@ -579,7 +741,13 @@ function ProgressPanel({ run }: { run: Extract<Run, { state: "running" } | { sta
             <CheckCircle2 className="size-8" aria-hidden />
           </motion.span>
           <p className="mt-4 text-lg font-semibold">Report saved</p>
-          <p className="text-muted-foreground mt-1 text-sm">Opening your report…</p>
+          {autoOpen ? (
+            <p className="text-muted-foreground mt-1 text-sm">Opening your report…</p>
+          ) : (
+            <Button className="mt-4" onClick={onViewReport}>
+              View report
+            </Button>
+          )}
         </div>
       </Panel>
     );
@@ -600,6 +768,13 @@ function ProgressPanel({ run }: { run: Extract<Run, { state: "running" } | { sta
               {mode === "pdf" ? "Usually 2–3 minutes." : "Usually 15–20 seconds."} You can keep
               working in another tab, but keep this one open until the report is saved.
             </p>
+            {runningState?.position != null && runningState.position > 0 && (
+              <p className="text-brand mt-2 text-sm font-medium">
+                {runningState.position === 1
+                  ? "One report is being analysed before yours; yours starts right after it."
+                  : `${runningState.position} reports are ahead of yours in the queue.`}
+              </p>
+            )}
           </div>
           <span className="bg-muted rounded-full px-3 py-1 font-mono text-sm tabular-nums">
             {minutes}:{seconds}

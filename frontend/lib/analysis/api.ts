@@ -71,6 +71,8 @@ export type PdfProgress = {
   onPhase?: (phase: PdfPhase) => void;
   /** Share of the file sent so far, 0–1. */
   onUpload?: (fraction: number) => void;
+  /** Place in the AI service's queue while the job waits (null once it runs). */
+  onQueue?: (position: number | null) => void;
 };
 
 /** A failure that remembers which phase it happened in, so the UI can name the step. */
@@ -175,8 +177,12 @@ export async function analyzePdf(file: File, progress: PdfProgress = {}): Promis
     result?: unknown;
     error?: string;
     error_status?: number;
+    position?: number;
   };
   let current = started.body as Job;
+  const reportQueue = () =>
+    progress.onQueue?.(current.status === "queued" ? (current.position ?? null) : null);
+  reportQueue();
   const deadline = Date.now() + 20 * 60_000;
   while (current.status === "queued" || current.status === "running") {
     if (Date.now() > deadline) {
@@ -198,6 +204,7 @@ export async function analyzePdf(file: File, progress: PdfProgress = {}): Promis
       throw new PdfAnalysisError(aiMessage(poll.status, body), poll.status, "processing");
     }
     current = body as Job;
+    reportQueue();
   }
   if (current.status === "failed") {
     throw new PdfAnalysisError(
@@ -235,7 +242,24 @@ export async function listReports(limit = 100): Promise<ReportSummary[]> {
  * Download a report as a PDF (built on the server from the saved result). Errors come
  * back as JSON, so the file is fetched first and saved only when it really is a PDF.
  */
-export async function downloadReportPdf(id: string): Promise<void> {
+/**
+ * The file name from a Content-Disposition header. Prefers the UTF-8 `filename*`, which
+ * keeps a Bangla title, over the plain ASCII fallback.
+ */
+export function fileNameFrom(disposition: string): string | null {
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  if (utf8) {
+    try {
+      return decodeURIComponent(utf8.trim());
+    } catch {
+      // A malformed name: fall back to the plain one.
+    }
+  }
+  return /filename="([^"]+)"/i.exec(disposition)?.[1] ?? null;
+}
+
+/** The server-made PDF report (the same file for Download and Print). */
+async function fetchReportPdf(id: string): Promise<{ blob: Blob; name: string }> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}/reports/${encodeURIComponent(id)}/pdf`, {
@@ -254,10 +278,15 @@ export async function downloadReportPdf(id: string): Promise<void> {
           : "The PDF could not be created. Please try again.";
     throw new AnalysisError(message, res.status);
   }
-  const disposition = res.headers.get("Content-Disposition") ?? "";
   const name =
-    /filename="([^"]+)"/.exec(disposition)?.[1] ?? `Parallax-Report_${id.slice(0, 8)}.pdf`;
-  const url = URL.createObjectURL(await res.blob());
+    fileNameFrom(res.headers.get("Content-Disposition") ?? "") ??
+    `Parallax-Report_${id.slice(0, 8)}.pdf`;
+  return { blob: await res.blob(), name };
+}
+
+export async function downloadReportPdf(id: string): Promise<void> {
+  const { blob, name } = await fetchReportPdf(id);
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = name;
@@ -265,6 +294,53 @@ export async function downloadReportPdf(id: string): Promise<void> {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/**
+ * Prints the same PDF that Download saves, so a printed report and a downloaded one are
+ * identical. The PDF loads in a hidden frame and the browser's print dialog opens on it;
+ * where a browser cannot print a framed PDF, it opens in a new tab to print from there.
+ */
+export async function printReportPdf(id: string): Promise<void> {
+  const { blob } = await fetchReportPdf(id);
+  const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const openInTab = () => {
+    window.open(url, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  };
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  if (isTouch) {
+    openInTab();
+    return;
+  }
+  document.querySelectorAll("iframe[data-report-print]").forEach((f) => f.remove());
+  const frame = document.createElement("iframe");
+  frame.dataset.reportPrint = "";
+  frame.title = "Report PDF for printing";
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0";
+  await new Promise<void>((resolve) => {
+    frame.onload = () => {
+      // The PDF viewer needs a moment after load before it can print.
+      setTimeout(() => {
+        try {
+          frame.contentWindow?.focus();
+          frame.contentWindow?.print();
+        } catch {
+          frame.remove();
+          openInTab();
+        }
+        resolve();
+      }, 400);
+    };
+    frame.src = url;
+    document.body.appendChild(frame);
+  });
+  // Keep the frame while the dialog is open; tidy up much later.
+  setTimeout(() => {
+    frame.remove();
+    URL.revokeObjectURL(url);
+  }, 120_000);
 }
 
 export function getReport(id: string): Promise<SavedReport> {

@@ -130,10 +130,19 @@ export function SignUpForm() {
       />
 
       <FormField id="department" label="Department" error={err("department")}>
-        <DepartmentSelect
-          {...register("department")}
-          {...fieldA11y("department", err("department"))}
-          disabled={isSubmitting}
+        <Controller
+          control={control}
+          name="department"
+          render={({ field }) => (
+            <DepartmentSelect
+              name={field.name}
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              {...fieldA11y("department", err("department"))}
+              disabled={isSubmitting}
+            />
+          )}
         />
       </FormField>
 
