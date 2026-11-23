@@ -1,4 +1,4 @@
-"""Sliding-window limiter for failed sign-ins.
+"""Sliding-window limiters: failed sign-ins, and requests that cost the AI service work.
 
 In-process only: fine for one API instance. With several instances, move the
 counters to Redis (already in docker-compose) behind the same interface.
@@ -47,3 +47,14 @@ class FailedLoginLimiter:
                 self._failures.clear()
             else:
                 self._failures.pop(key, None)
+
+
+class RequestLimiter(FailedLoginLimiter):
+    """At most `max_attempts` requests per key in the window; every request counts."""
+
+    def hit(self, key: str) -> int:
+        """Count a request; returns 0 if it may go ahead, else the seconds to wait."""
+        wait = self.retry_after(key)
+        if not wait:
+            self.record_failure(key)
+        return wait
