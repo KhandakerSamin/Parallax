@@ -14,6 +14,7 @@ from app.extraction.document import extract_document
 from app.extraction.preprocessor import clean_text, detect_language_hint
 from app.models.analysis import AnalysisResult
 from app.pipelines.analyze import Analyzer
+from app.pipelines.related import RelatedResult, find_related
 from app.services.corpus import Corpus
 
 
@@ -79,6 +80,12 @@ class Engine:
             "meta": {"title": title},
         }
         return self.analyzer.analyze(self._strip(document))
+
+    def related(self, text: str, limit: int = 10) -> RelatedResult:
+        a = self.analyzer
+        return find_related(
+            clean_text(text), index=a.index, encoder=a.encoder, corpus=a.corpus, concepts=a.concepts, limit=limit
+        )
 
 
 @lru_cache(maxsize=1)

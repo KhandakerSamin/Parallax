@@ -2,6 +2,7 @@ import {
   FileStack,
   Gavel,
   LayoutDashboard,
+  Lightbulb,
   ScanSearch,
   Settings,
   Users,
@@ -31,6 +32,7 @@ export function navFor(role: Role): NavGroup[] {
       label: "Workspace",
       items: [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+        { href: "/dashboard/related", label: "Prior work", icon: Lightbulb },
         { href: "/dashboard/analyze", label: "Analyze", icon: ScanSearch },
         { href: "/dashboard/reports", label: "My reports", icon: FileStack },
       ],
@@ -61,6 +63,7 @@ export function isActive(item: NavItem, pathname: string): boolean {
 }
 
 const TITLES: [RegExp, string][] = [
+  [/^\/dashboard\/related/, "Prior work"],
   [/^\/dashboard\/analyze/, "Analyze"],
   [/^\/dashboard\/reports/, "My reports"],
   [/^\/dashboard\/reviews/, "Review queue"],

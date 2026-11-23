@@ -75,6 +75,10 @@ def analyze_pdf(data: bytes, filename: str) -> dict[str, Any]:
     return _post("/analyze", files={"file": (filename, data, "application/pdf")})
 
 
+def related_work(text: str, limit: int) -> dict[str, Any]:
+    return _post("/related", json={"text": text, "limit": limit})
+
+
 # ----- Direct uploads: the browser sends the PDF to the AI service itself ------
 
 

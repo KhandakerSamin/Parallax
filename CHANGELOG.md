@@ -2,6 +2,14 @@
 
 What changed in Parallax, newest first. Dates are when the work was committed; the git history has the detail.
 
+## 2026-11-24
+
+- **Explore prior work.** A new page (Prior work, in the sidebar) where a student describes a project idea in
+  a few sentences and sees the closest earlier DIU reports before writing anything: closest first, with the
+  passage that matched, the key terms the idea shares with each report, and the terms only the idea has.
+  Searches take about a tenth of a second, are not saved, and reviewers never see them. Each person can
+  search 20 times a minute.
+
 ## 2026-11-23
 
 - **Reviewed reports can't be deleted.** Once a reviewer records a decision, the student no longer sees Delete

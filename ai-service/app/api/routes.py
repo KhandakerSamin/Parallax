@@ -2,6 +2,7 @@
 
 GET  /health
 POST /analyze/text   analyse pasted text (quick, answered directly)
+POST /related        the earlier reports closest to a project idea (discovery, nothing saved)
 POST /analyze        analyse a PDF and wait for the result
 POST /jobs           analyse a PDF in the background: answers at once with a job id
 GET  /jobs/{id}      the job's status, and its signed result once done
@@ -16,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.models.analysis import AnalysisResult
+from app.pipelines.related import RelatedResult
 from app.security import require_access, sign_result
 from app.services.engine import Engine, IndexNotReadyError, UnreadablePdfError, get_engine
 from app.services.jobs import JobFailedError, queue
@@ -57,6 +59,17 @@ class TextRequest(BaseModel):
 @router.post("/analyze/text", response_model=AnalysisResult)
 def analyze_text(body: TextRequest, engine: EngineDep, caller: CallerDep) -> AnalysisResult:
     return _signed(engine.analyze_text(body.text, body.title), caller)
+
+
+class RelatedRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=5_000)
+    limit: int = Field(10, ge=1, le=20)
+
+
+@router.post("/related", response_model=RelatedResult)
+def related(body: RelatedRequest, engine: EngineDep, caller: CallerDep) -> RelatedResult:
+    """The earlier reports closest to a project idea, for discovery before writing."""
+    return engine.related(body.text, body.limit)
 
 
 PdfUpload = Annotated[UploadFile, File(description="The report, as a PDF")]
