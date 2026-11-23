@@ -115,6 +115,21 @@ def test_reviewers_can_open_but_not_delete_a_students_report(client, setup):
     assert client.delete(f"/api/v1/reports/{setup['first']}").status_code == 404
 
 
+def test_a_student_cannot_delete_a_reviewed_report(client, setup):
+    client.put(f"/api/v1/reports/{setup['second']}/review", json={"status": "follow_up"})
+    sign_in(client, "rahim@diu.edu.bd")
+    response = client.delete(f"/api/v1/reports/{setup['second']}")
+    assert response.status_code == 409
+    assert client.get(f"/api/v1/reports/{setup['second']}").status_code == 200
+
+
+def test_a_report_reset_to_pending_can_be_deleted_again(client, setup):
+    client.put(f"/api/v1/reports/{setup['first']}/review", json={"status": "cleared"})
+    client.put(f"/api/v1/reports/{setup['first']}/review", json={"status": "pending"})
+    sign_in(client, "nusrat@diu.edu.bd")
+    assert client.delete(f"/api/v1/reports/{setup['first']}").status_code == 204
+
+
 def test_an_unknown_decision_is_rejected(client, setup):
     response = client.put(f"/api/v1/reports/{setup['first']}/review", json={"status": "plagiarism"})
     assert response.status_code == 400  # validation errors are 400 across this API
