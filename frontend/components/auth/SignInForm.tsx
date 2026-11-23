@@ -5,6 +5,7 @@ import { motion, useAnimationControls } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -30,6 +31,7 @@ export function SignInForm() {
   const shake = useAnimationControls();
   const next = safeNext(searchParams.get("next"));
   const googleError = googleErrorMessage(searchParams.get("error"));
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     register,
@@ -42,6 +44,7 @@ export function SignInForm() {
   });
 
   async function onSubmit(values: SignInValues) {
+    setFormError(null);
     try {
       const user = await signIn(values);
       toast.success(`Welcome back, ${user.name.split(" ")[0]}`);
@@ -49,7 +52,9 @@ export function SignInForm() {
       router.refresh();
     } catch (error) {
       void shake.start({ x: [0, -10, 10, -7, 7, -3, 3, 0], transition: { duration: 0.45 } });
-      toast.error(error instanceof AuthError ? error.message : "Sign-in failed. Please try again.");
+      setFormError(
+        error instanceof AuthError ? error.message : "Sign-in failed. Please try again.",
+      );
     }
   }
 
@@ -57,6 +62,7 @@ export function SignInForm() {
     <motion.form
       animate={shake}
       onSubmit={handleSubmit(onSubmit)}
+      onChange={() => formError && setFormError(null)}
       noValidate
       className="space-y-4"
       aria-describedby="signin-demo"
@@ -123,14 +129,23 @@ export function SignInForm() {
         )}
       />
 
+      {formError && (
+        <div
+          role="alert"
+          className="border-danger/30 bg-danger/5 text-foreground flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-sm"
+        >
+          <AlertCircle className="text-danger mt-0.5 size-4 shrink-0" aria-hidden />
+          {formError}
+        </div>
+      )}
+
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <Loader2 className="animate-spin" aria-hidden />}
         {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
 
       <p id="signin-demo" className="bg-muted text-muted-foreground rounded-xl px-4 py-3 text-xs">
-        Demo account:{" "}
-        <span className="text-foreground font-mono">student@diu.edu.bd</span> /{" "}
+        Demo account: <span className="text-foreground font-mono">student@diu.edu.bd</span> /{" "}
         <span className="text-foreground font-mono">Parallax#2026</span>
       </p>
     </motion.form>
