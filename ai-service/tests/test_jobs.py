@@ -123,6 +123,34 @@ def test_queue_position_counts_the_jobs_ahead():
     assert queue.position(third) is None
 
 
+def test_a_job_waiting_over_an_hour_is_kept_and_old_results_are_dropped():
+    import threading
+
+    queue = JobQueue(workers=1)
+    done = queue.submit("u-0", lambda: {"ok": 0})
+    deadline = time.time() + 5
+    while done.status != "done" and time.time() < deadline:
+        time.sleep(0.01)
+
+    release = threading.Event()
+    running = queue.submit("u-1", lambda: release.wait(5) and {"ok": 1})
+    waiting = queue.submit("u-2", lambda: {"ok": 2})
+    two_hours_ago = time.time() - 2 * 60 * 60
+    done.finished = two_hours_ago
+    running.created = waiting.created = two_hours_ago
+
+    queue.submit("u-3", lambda: {"ok": 3})  # submitting prunes the queue
+
+    assert queue.get(done.id, "u-0") is None  # finished long ago: forgotten
+    assert queue.get(running.id, "u-1") is running
+    assert queue.get(waiting.id, "u-2") is waiting  # still waiting: never dropped
+    release.set()
+    deadline = time.time() + 5
+    while waiting.status != "done" and time.time() < deadline:
+        time.sleep(0.01)
+    assert queue.get(waiting.id, "u-2").result == {"ok": 2}
+
+
 def test_job_status_reports_the_position_only_while_queued(client, monkeypatch):
     import threading
 
