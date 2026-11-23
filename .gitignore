@@ -73,3 +73,5 @@ desktop.ini
 # Extra index builds and overnight harvest logs
 data/embeddings-*/
 data/*.err
+
+.claude/settings.local.json
