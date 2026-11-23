@@ -208,7 +208,7 @@ function RowMenu({
           <Download aria-hidden />
           Download PDF
         </DropdownMenuItem>
-        {onDelete && (
+        {onDelete && (report.reviewStatus ?? "pending") === "pending" && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem

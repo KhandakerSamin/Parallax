@@ -113,7 +113,7 @@ export function ReportPage({ id }: { id: string }) {
       <ReportHeader
         saved={saved}
         ownerLabel={ownerLabel}
-        canDelete={own}
+        canDelete={own && (saved.report.reviewStatus ?? "pending") === "pending"}
         canReview={reviewer}
         onDelete={() => setDeleteOpen(true)}
         onJumpToReview={jumpToReview}
