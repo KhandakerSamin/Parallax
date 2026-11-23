@@ -65,7 +65,10 @@ def location(response) -> str:
 # ----- start -----------------------------------------------------------------
 
 
-def test_reports_unavailable_without_credentials(client):
+def test_reports_unavailable_without_credentials(client, monkeypatch):
+    settings = get_settings()
+    monkeypatch.setattr(settings, "google_client_id", "")
+    monkeypatch.setattr(settings, "google_client_secret", "")
     response = client.get(GOOGLE, follow_redirects=False)
     assert location(response) == "/sign-in?error=google_unavailable"
 
