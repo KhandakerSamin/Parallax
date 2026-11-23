@@ -2,6 +2,18 @@
 
 What changed in Parallax, newest first. Dates are when the work was committed; the git history has the detail.
 
+## 2026-11-23
+
+- **Reviewed reports can't be deleted.** Once a reviewer records a decision, the student no longer sees Delete
+  and the API refuses it, so a "Needs follow-up" report stays on record. Resetting the decision to "Awaiting
+  review" allows deleting again.
+- **No lost analyses in a long queue.** The AI service used to forget a PDF job that waited in the queue for
+  more than an hour; waiting and running jobs are now always kept, and a result is kept for an hour after it
+  finishes.
+- **Sign-in errors stay visible.** A wrong password is shown inside the form, read out by screen readers, and
+  cleared when you edit a field, instead of a toast that disappears.
+- **The waiting-game prompt starts on "No thanks"**, so pressing Enter never starts a game by accident.
+
 ## 2026-11-22
 
 - **PDF file names keep Bangla titles.** A Bangla report used to download as `Parallax-Report_report_<date>.pdf`;
