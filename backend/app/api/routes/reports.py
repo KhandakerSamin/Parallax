@@ -4,7 +4,7 @@
   GET    /reports        newest first, summaries only
   GET    /reports/{id}   one report with its full result
   GET    /reports/{id}/pdf   the same report as a downloadable PDF
-  DELETE /reports/{id}   the owner only
+  DELETE /reports/{id}   the owner only, and only before a reviewer has decided
   PUT    /reports/{id}/review   a reviewer's decision: pending, cleared or follow_up
 
   GET    /reviews        reviewers: every user's reports, undecided first
@@ -116,12 +116,14 @@ def download_report_pdf(report_id: str, user: CurrentUser, db: DbSession) -> Res
 @router.delete(
     "/{report_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={401: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={401: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 409: {"model": ErrorResponse}},
 )
 def delete_report(report_id: str, user: CurrentUser, db: DbSession) -> Response:
     report = report_service.own_report(db, user, report_id)
     if report is None:
         raise ApiError(404, NOT_FOUND)
+    if report.review_status != "pending":
+        raise ApiError(409, "A reviewer has already decided on this report, so it can't be deleted.")
     report_service.delete_report(db, report)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -69,7 +69,7 @@ export function WaitingGameInvite({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && decline()}>
-      <DialogContent className="max-w-md" closeLabel="No thanks">
+      <DialogContent className="max-w-md" closeLabel="Close">
         <span className="bg-semantic-soft text-semantic grid size-11 place-items-center rounded-2xl">
           <Gamepad2 className="size-5" aria-hidden />
         </span>
@@ -81,7 +81,7 @@ export function WaitingGameInvite({
           The analysis keeps running either way, and you can close the game at any time.
         </p>
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row">
-          <Button variant="outline" className="sm:flex-1" onClick={decline}>
+          <Button variant="outline" className="sm:flex-1" onClick={decline} autoFocus>
             No thanks
           </Button>
           <Button
@@ -90,7 +90,6 @@ export function WaitingGameInvite({
               if (dontAsk) writeStored(GAME_KEYS.offer, "off");
               onPlay();
             }}
-            autoFocus
           >
             <Gamepad2 aria-hidden />
             Play a game

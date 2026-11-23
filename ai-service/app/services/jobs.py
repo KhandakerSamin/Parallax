@@ -4,8 +4,9 @@ A full report can take minutes on a small cloud CPU, longer than hosting
 platforms keep a request open. So a PDF is accepted at once as a job, analysed
 on a background worker, and the browser checks back until the result is ready.
 
-Jobs live in memory on the single instance that serves the AI service: they are
-short-lived (an hour) and a restart only loses analyses in progress. One worker
+Jobs live in memory on the single instance that serves the AI service: a result
+is kept for an hour after it finishes, however long the job waited in the queue,
+and a restart only loses analyses in progress. One worker
 runs at a time, so two large reports never compete for the model and memory.
 """
 
@@ -34,6 +35,11 @@ class Job:
     error: str | None = None
     error_status: int | None = None
     created: float = field(default_factory=time.time)
+    finished: float | None = None
+
+    @property
+    def active(self) -> bool:
+        return self.status in ("queued", "running")
 
     def public(self, position: int | None = None) -> dict[str, Any]:
         body: dict[str, Any] = {"id": self.id, "status": self.status}
@@ -95,11 +101,19 @@ class JobQueue:
             job.error, job.error_status, job.status = exc.message, exc.status, "failed"
         except Exception:  # noqa: BLE001 - reported to the user, not swallowed silently
             job.error, job.error_status, job.status = "The analysis failed. Please try again.", 500, "failed"
+        finally:
+            job.finished = time.time()
 
     def _prune(self) -> None:
+        """Forget finished jobs an hour after they finish, and the oldest finished ones past MAX_JOBS.
+
+        Queued and running jobs are never dropped: their owners are still waiting for them.
+        """
         cutoff = time.time() - JOB_TTL_SECONDS
-        keep = [j for j in self._order if self._jobs[j].created >= cutoff or self._jobs[j].status == "running"]
-        keep = keep[-MAX_JOBS:]
+        keep = [j for j in self._order if self._jobs[j].active or (self._jobs[j].finished or 0) >= cutoff]
+        finished = [j for j in keep if not self._jobs[j].active]
+        excess = set(finished[: max(0, len(finished) - MAX_JOBS)])
+        keep = [j for j in keep if j not in excess]
         for job_id in set(self._order) - set(keep):
             self._jobs.pop(job_id, None)
         self._order = keep
