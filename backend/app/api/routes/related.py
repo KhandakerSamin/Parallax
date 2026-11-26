@@ -41,7 +41,11 @@ async def related_work(body: RelatedWorkRequest, user: CurrentUser) -> dict[str,
         raise ApiError(422, f"Describe your idea in at least {MIN_WORDS} words.", field="text")
     wait = limiter.hit(user.id)
     if wait:
-        raise ApiError(429, f"That's a lot of searches. Try again in {wait} seconds.")
+        raise ApiError(
+            429,
+            f"That's a lot of searches. Try again in {wait} seconds.",
+            headers={"Retry-After": str(wait)},
+        )
     try:
         return await run_in_threadpool(analysis.related_work, text, body.limit)
     except analysis.AnalysisUnavailableError as exc:
