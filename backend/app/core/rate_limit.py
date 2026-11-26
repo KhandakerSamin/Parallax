@@ -53,8 +53,15 @@ class RequestLimiter(FailedLoginLimiter):
     """At most `max_attempts` requests per key in the window; every request counts."""
 
     def hit(self, key: str) -> int:
-        """Count a request; returns 0 if it may go ahead, else the seconds to wait."""
-        wait = self.retry_after(key)
-        if not wait:
-            self.record_failure(key)
-        return wait
+        """Count a request; returns 0 if it may go ahead, else the seconds to wait.
+
+        Checking and counting happen under one lock, so two requests at the same
+        moment can't both take the last free slot.
+        """
+        with self._lock:
+            now = self._clock()
+            attempts = self._prune(key, now)
+            if len(attempts) >= self.max_attempts:
+                return max(1, math.ceil(self.window - (now - attempts[0])))
+            self._failures[key].append(now)
+            return 0
