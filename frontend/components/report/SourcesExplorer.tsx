@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 type SortKey = "hybrid" | PerspectiveKey;
 
 const SORTS: { value: SortKey; label: string }[] = [
-  { value: "hybrid", label: "Hybrid" },
+  { value: "hybrid", label: "Combined score" },
   ...PERSPECTIVES.map((p) => ({ value: p.key, label: p.name })),
 ];
 
@@ -164,7 +164,7 @@ function SourceDetail({ match }: { match: Match }) {
         </div>
         <div className="text-right">
           <p className="text-3xl font-semibold tabular-nums">{pct(hybrid(match))}</p>
-          <p className="text-muted-foreground text-xs">hybrid score</p>
+          <p className="text-muted-foreground text-xs">combined score for this source</p>
         </div>
       </div>
       <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

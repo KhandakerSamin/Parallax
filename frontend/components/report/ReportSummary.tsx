@@ -190,7 +190,9 @@ export function SummaryBand({
           <div className="max-w-56 space-y-2.5">
             <LevelBadge level={level} size="lg" />
             <p className="text-muted-foreground text-sm">
-              of your text closely matches earlier DIU reports, by wording or meaning.
+              <span className="text-foreground font-medium">Overall similarity:</span> the share of
+              your text that closely matches earlier DIU reports, by wording or meaning. Each source
+              below also has its own combined score.
             </p>
           </div>
         </div>
