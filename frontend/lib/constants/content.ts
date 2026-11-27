@@ -153,13 +153,13 @@ export const HERO = {
 /* Corpus                                                              */
 /* ------------------------------------------------------------------ */
 export const CORPUS_STATS = [
-  { value: 642, suffix: "", label: "Project reports" },
-  { value: 356, suffix: "", label: "Thesis reports" },
-  { value: 22, suffix: "", label: "Internship reports" },
-  { value: 2000, suffix: "+", label: "Target corpus" },
+  { value: 1925, suffix: "", label: "DIU reports indexed" },
+  { value: 209, suffix: "K", label: "Passages searched" },
+  { value: 14, suffix: "M+", label: "Words of text" },
+  { value: 8, suffix: "", label: "Years (2018–2025)" },
 ] as const;
 
-export const CORPUS_SOURCE = "DIU DSpace · Software Engineering community";
+export const CORPUS_SOURCE = "DIU DSpace · Software Engineering and Computer Science reports";
 
 /* ------------------------------------------------------------------ */
 /* Problem                                                             */
@@ -421,12 +421,12 @@ export const RESEARCH = {
   title: "Measured against human judgment.",
   intro:
     "Every model is evaluated on document pairs labelled by human annotators. We publish what we measure, and nothing before it is measured.",
-  status: "Evaluation in progress: results forthcoming",
+  status: "Planted-reuse test: 100% of pasted copies found · human labelling in progress",
   models: [
     { name: "TF-IDF", note: "Lexical baseline" },
     { name: "paraphrase-multilingual-MiniLM-L12-v2", note: "Compact multilingual embeddings" },
-    { name: "LaBSE", note: "Language-agnostic sentence embeddings" },
-    { name: "Bangla-specific model", note: "Monolingual Bangla embeddings" },
+    { name: "multilingual-e5", note: "Multilingual retrieval embeddings" },
+    { name: "LaBSE", note: "Chosen: clearest gap between related and unrelated pairs" },
     { name: "Hybrid Parallax", note: "Four perspectives, weighted" },
   ],
   metrics: ["Precision", "Recall", "F1", "Recall@K", "Spearman ρ"],

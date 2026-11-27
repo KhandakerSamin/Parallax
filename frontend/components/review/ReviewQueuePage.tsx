@@ -261,7 +261,7 @@ export function ReviewQueuePage() {
           {rows.length > 0 && (
             <>
               <div className="-mx-1 hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[960px] border-separate border-spacing-0 text-sm">
+                <table className="w-full min-w-[820px] border-separate border-spacing-0 text-sm 2xl:min-w-[960px]">
                   <caption className="sr-only">Reports for review</caption>
                   <thead>
                     <tr className="text-muted-foreground text-left text-xs">
@@ -277,7 +277,10 @@ export function ReviewQueuePage() {
                         <th
                           key={h}
                           scope="col"
-                          className="border-border border-b px-3 pb-2.5 font-medium"
+                          className={cn(
+                            "border-border border-b px-3 pb-2.5 font-medium",
+                            h === "Submitted" && "hidden 2xl:table-cell",
+                          )}
                         >
                           {h}
                         </th>
@@ -308,7 +311,7 @@ export function ReviewQueuePage() {
                               {r.ownerUniversityId}
                             </span>
                           </td>
-                          <td className="border-border max-w-64 border-b px-3 py-3">
+                          <td className="border-border max-w-52 border-b px-3 py-3 2xl:max-w-64">
                             <Link
                               href={`/dashboard/reports/${r.id}#review`}
                               onClick={(e) => e.stopPropagation()}
@@ -322,12 +325,12 @@ export function ReviewQueuePage() {
                           <td className="border-border border-b px-3 py-3">
                             <LevelBadge level={r.level} value={r.overall} />
                           </td>
-                          <td className="border-border text-muted-foreground max-w-56 border-b px-3 py-3">
+                          <td className="border-border text-muted-foreground max-w-44 border-b px-3 py-3 2xl:max-w-56">
                             <span {...langProps(r.topSourceTitle)} className="bn-aware clamp-2">
                               {r.topSourceTitle ?? "—"}
                             </span>
                           </td>
-                          <td className="border-border text-muted-foreground border-b px-3 py-3 whitespace-nowrap">
+                          <td className="border-border text-muted-foreground hidden border-b px-3 py-3 whitespace-nowrap 2xl:table-cell">
                             {formatDate(r.createdAt, false)}
                           </td>
                           <td

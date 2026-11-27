@@ -52,6 +52,7 @@ def test_searches_are_limited_per_person(signed_in, found):  # noqa: F811
     response = signed_in.post(URL, json={"text": IDEA})
     assert response.status_code == 429
     assert "Try again in" in response.json()["message"]
+    assert 1 <= int(response.headers["Retry-After"]) <= related.limiter.window
 
 
 def test_an_unavailable_ai_service_answers_503(signed_in, found):  # noqa: F811

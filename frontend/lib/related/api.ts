@@ -16,6 +16,17 @@ export type RelatedReport = {
   shared_terms: string[];
 };
 
+/** A 429 from the search: `retryAfter` is how many seconds to wait. */
+export class TooManySearchesError extends AnalysisError {
+  constructor(
+    message: string,
+    readonly retryAfter: number,
+  ) {
+    super(message, 429);
+    this.name = "TooManySearchesError";
+  }
+}
+
 export type RelatedResult = {
   reports: RelatedReport[];
   /** The idea's key terms that none of the shown reports share. */
@@ -46,6 +57,13 @@ export async function findRelatedWork(text: string, limit = 10): Promise<Related
           : res.status >= 500
             ? "The search service is not available right now. Please try again shortly."
             : "The search failed. Please try again.";
+    if (res.status === 429) {
+      const seconds = Number(res.headers.get("Retry-After"));
+      throw new TooManySearchesError(
+        message,
+        Number.isFinite(seconds) && seconds > 0 ? seconds : 60,
+      );
+    }
     throw new AnalysisError(message, res.status);
   }
   return body as RelatedResult;

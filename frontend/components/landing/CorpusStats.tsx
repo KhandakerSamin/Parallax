@@ -30,7 +30,7 @@ export function CorpusStats() {
           </dl>
           <p className="text-muted-foreground mt-7 flex items-center justify-center gap-2 text-xs">
             <Database className="size-3.5" aria-hidden />
-            Source: {CORPUS_SOURCE}. The 2,000+ figure is a growth target.
+            Source: {CORPUS_SOURCE}. Duplicate uploads removed.
           </p>
         </Reveal>
       </div>

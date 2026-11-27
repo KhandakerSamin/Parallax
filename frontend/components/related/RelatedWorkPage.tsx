@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, ExternalLink, Lightbulb, Loader2, Search, Sparkles } from "lucide-react";
-import { type FormEvent, useId, useRef, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { EmptyState, PageHeader, Panel, Skeleton } from "@/components/app/ui";
 import { Button } from "@/components/ui/button";
 import { AnalysisError } from "@/lib/analysis/types";
@@ -9,6 +9,7 @@ import { langProps } from "@/lib/app/format";
 import {
   type Closeness,
   findRelatedWork,
+  TooManySearchesError,
   MAX_IDEA_CHARS,
   MIN_IDEA_WORDS,
   type RelatedReport,
@@ -40,6 +41,14 @@ export function RelatedWorkPage() {
   const ideaId = useId();
   const resultsRef = useRef<HTMLDivElement>(null);
   const words = countWords(idea);
+  // Seconds left before the server accepts another search, after a 429.
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -54,6 +63,7 @@ export function RelatedWorkPage() {
       setState({ status: "ready", result });
       requestAnimationFrame(() => resultsRef.current?.focus());
     } catch (err) {
+      if (err instanceof TooManySearchesError) setCooldown(err.retryAfter);
       setState({
         status: "error",
         message:
@@ -100,13 +110,17 @@ export function RelatedWorkPage() {
             </p>
           )}
           <div className="flex justify-end">
-            <Button type="submit" disabled={state.status === "loading"}>
+            <Button type="submit" disabled={state.status === "loading" || cooldown > 0}>
               {state.status === "loading" ? (
                 <Loader2 className="animate-spin" aria-hidden />
               ) : (
                 <Search aria-hidden />
               )}
-              {state.status === "loading" ? "Searching…" : "Find related work"}
+              {state.status === "loading"
+                ? "Searching…"
+                : cooldown > 0
+                  ? `Try again in ${cooldown}s`
+                  : "Find related work"}
             </Button>
           </div>
         </form>

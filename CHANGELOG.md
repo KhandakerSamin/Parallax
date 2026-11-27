@@ -2,6 +2,13 @@
 
 What changed in Parallax, newest first. Dates are when the work was committed; the git history has the detail.
 
+## 2026-11-26
+
+- **Fairer search limit.** Two prior-work searches sent at the same moment could both take the last free slot
+  in a person's per-minute limit; checking and counting now happen together, so the limit of 20 holds.
+- **The page says when to search again.** After too many searches, the API sends how long to wait and the
+  Find related work button counts down instead of failing again.
+
 ## 2026-11-24
 
 - **Explore prior work.** A new page (Prior work, in the sidebar) where a student describes a project idea in
